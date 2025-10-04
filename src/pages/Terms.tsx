@@ -8,9 +8,9 @@ const Terms = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Code2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">DevConsole</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <Code2 className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">VibeDevConsole</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -30,7 +30,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-bold mb-4">1. Acceptance of Terms</h2>
               <p className="text-muted-foreground leading-relaxed">
-                By accessing and using DevConsole ("the Platform"), you accept and agree to be bound by these
+                By accessing and using VibeDevConsole ("the Platform"), you accept and agree to be bound by these
                 Terms of Service. If you do not agree to these terms, please do not use our services.
               </p>
             </section>
@@ -97,7 +97,7 @@ const Terms = () => {
 
               <h3 className="text-xl font-semibold mb-3 mt-6">Platform Rights</h3>
               <p className="text-muted-foreground leading-relaxed">
-                All Platform features, design, and functionality are owned by DevConsole and protected by
+                All Platform features, design, and functionality are owned by VibeDevConsole and protected by
                 copyright, trademark, and other intellectual property laws.
               </p>
             </section>
@@ -137,7 +137,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-bold mb-4">9. Limitation of Liability</h2>
               <p className="text-muted-foreground leading-relaxed">
-                TO THE MAXIMUM EXTENT PERMITTED BY LAW, DEVCONSOLE SHALL NOT BE LIABLE FOR ANY INDIRECT,
+                TO THE MAXIMUM EXTENT PERMITTED BY LAW, VIBEDEVCONSOLE SHALL NOT BE LIABLE FOR ANY INDIRECT,
                 INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES ARISING FROM YOUR USE OF THE PLATFORM.
               </p>
             </section>
@@ -145,7 +145,7 @@ const Terms = () => {
             <section>
               <h2 className="text-2xl font-bold mb-4">10. Indemnification</h2>
               <p className="text-muted-foreground leading-relaxed">
-                You agree to indemnify and hold harmless DevConsole from any claims, damages, or expenses arising
+                You agree to indemnify and hold harmless VibeDevConsole from any claims, damages, or expenses arising
                 from your use of the Platform, your applications, or your violation of these terms.
               </p>
             </section>
@@ -187,9 +187,9 @@ const Terms = () => {
               <p className="text-muted-foreground leading-relaxed mb-4">
                 For questions about these Terms of Service, please contact us:
               </p>
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-muted-foreground">Email: legal@devconsole.example.com</p>
-                <p className="text-muted-foreground">Support: support@devconsole.example.com</p>
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg border border-primary/20">
+                <p className="text-foreground font-medium">Email: legal@vibedevconsole.com</p>
+                <p className="text-foreground font-medium">Support: support@vibedevconsole.com</p>
               </div>
             </section>
           </div>

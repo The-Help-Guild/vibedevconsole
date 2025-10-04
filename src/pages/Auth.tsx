@@ -110,15 +110,23 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 gradient-subtle">
-      <Card className="w-full max-w-md shadow-elegant">
+    <div className="min-h-screen flex items-center justify-center p-4 gradient-subtle relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-pulse-glow"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-accent/10 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1s" }}></div>
+      </div>
+      
+      <Card className="w-full max-w-md shadow-vibrant relative z-10 border-primary/20">
         <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <div className="p-3 gradient-primary rounded-lg">
+          <Link to="/" className="flex justify-center mb-4 group">
+            <div className="p-3 gradient-vibrant rounded-lg shadow-glow transition-transform group-hover:scale-110 duration-300">
               <Code2 className="h-8 w-8 text-primary-foreground" />
             </div>
-          </div>
-          <CardTitle className="text-2xl">{isLogin ? "Welcome Back" : "Create Account"}</CardTitle>
+          </Link>
+          <CardTitle className="text-2xl bg-gradient-primary bg-clip-text text-transparent">
+            {isLogin ? "Welcome Back" : "Create Account"}
+          </CardTitle>
           <CardDescription>
             {isLogin ? "Sign in to access your developer dashboard" : "Start publishing your Android apps today"}
           </CardDescription>
@@ -205,20 +213,30 @@ const Auth = () => {
           </CardContent>
 
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" variant="hero" className="w-full" disabled={loading}>
-              {loading ? "Please wait..." : isLogin ? "Sign In" : "Create Account"}
+            <Button type="submit" variant="hero" className="w-full shadow-glow" disabled={loading}>
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="animate-spin">⚡</span>
+                  Please wait...
+                </span>
+              ) : (
+                isLogin ? "Sign In" : "Create Account"
+              )}
             </Button>
 
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
             </button>
 
-            <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
-              ← Back to home
+            <Link to="/" className="text-sm text-muted-foreground hover:text-primary transition-colors group">
+              <span className="inline-flex items-center gap-1">
+                <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                Back to home
+              </span>
             </Link>
           </CardFooter>
         </form>

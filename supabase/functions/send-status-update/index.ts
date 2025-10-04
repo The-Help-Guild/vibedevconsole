@@ -91,7 +91,7 @@ const handler = async (req: Request): Promise<Response> => {
       : `⚠️ App Review Update: "${appName}"`;
 
     const emailResponse = await resend.emails.send({
-      from: "DevConsole <onboarding@resend.dev>",
+      from: "VibeDevConsole <onboarding@resend.dev>",
       to: [email],
       subject,
       html: `
@@ -137,7 +137,7 @@ const handler = async (req: Request): Promise<Response> => {
           <p>Thank you for being part of our developer community!</p>
           
           <p style="color: #666; font-size: 12px; margin-top: 30px;">
-            DevConsole Team<br>
+            VibeDevConsole Team<br>
             This is an automated email. Please do not reply.
           </p>
         </div>

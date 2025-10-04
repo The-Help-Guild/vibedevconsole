@@ -8,9 +8,9 @@ const Privacy = () => {
     <div className="min-h-screen bg-gradient-subtle">
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <Code2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">DevConsole</span>
+          <Link to="/" className="flex items-center gap-2 group">
+            <Code2 className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+            <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">VibeDevConsole</span>
           </Link>
           <Link to="/">
             <Button variant="ghost" size="sm">
@@ -30,7 +30,7 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-bold mb-4">1. Introduction</h2>
               <p className="text-muted-foreground leading-relaxed">
-                DevConsole ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy
+                VibeDevConsole ("we," "our," or "us") is committed to protecting your privacy. This Privacy Policy
                 explains how we collect, use, disclose, and safeguard your information when you use our Android
                 app submission platform. This policy complies with the EU General Data Protection Regulation
                 (GDPR) and the California Consumer Privacy Act (CCPA/CPRA).
@@ -99,7 +99,7 @@ const Privacy = () => {
                 <li><strong>Non-Discrimination:</strong> Not receive discriminatory treatment for exercising your rights</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                To exercise these rights, please contact us at privacy@devconsole.example.com
+                To exercise these rights, please contact us at privacy@vibedevconsole.com
               </p>
             </section>
 
@@ -153,9 +153,9 @@ const Privacy = () => {
               <p className="text-muted-foreground leading-relaxed mb-4">
                 If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us:
               </p>
-              <div className="bg-muted p-4 rounded-lg">
-                <p className="text-muted-foreground">Email: privacy@devconsole.example.com</p>
-                <p className="text-muted-foreground">Data Protection Officer: dpo@devconsole.example.com</p>
+              <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg border border-primary/20">
+                <p className="text-foreground font-medium">Email: privacy@vibedevconsole.com</p>
+                <p className="text-foreground font-medium">Data Protection Officer: dpo@vibedevconsole.com</p>
               </div>
             </section>
 

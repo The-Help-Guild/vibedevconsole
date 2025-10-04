@@ -103,9 +103,9 @@ const Dashboard = () => {
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2">
-              <Code2 className="h-8 w-8 text-primary" />
-              <span className="text-xl font-bold">DevConsole</span>
+            <Link to="/" className="flex items-center gap-2 group">
+              <Code2 className="h-8 w-8 text-primary group-hover:scale-110 transition-transform" />
+              <span className="text-xl font-bold bg-gradient-primary bg-clip-text text-transparent">VibeDevConsole</span>
             </Link>
           </div>
           <div className="flex items-center gap-4">
@@ -130,16 +130,18 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Welcome back!</h1>
+        <div className="mb-8 animate-fade-in">
+          <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+            Welcome back!
+          </h1>
           <p className="text-muted-foreground">Manage your Android applications and submissions</p>
         </div>
 
         {/* Quick Stats */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="p-6 shadow-card">
+          <Card className="p-6 shadow-vibrant hover:shadow-glow transition-all duration-300 border-primary/20 animate-slide-up">
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-success/10 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-success/20 to-success/10 rounded-lg">
                 <CheckCircle2 className="h-6 w-6 text-success" />
               </div>
               <div>
@@ -149,9 +151,9 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6 shadow-card">
+          <Card className="p-6 shadow-vibrant hover:shadow-glow transition-all duration-300 border-primary/20 animate-slide-up" style={{ animationDelay: "0.1s" }}>
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-warning/10 rounded-lg">
+              <div className="p-3 bg-gradient-to-br from-warning/20 to-warning/10 rounded-lg">
                 <Clock className="h-6 w-6 text-warning" />
               </div>
               <div>
@@ -161,10 +163,10 @@ const Dashboard = () => {
             </div>
           </Card>
 
-          <Card className="p-6 shadow-card">
+          <Card className="p-6 shadow-vibrant hover:shadow-glow transition-all duration-300 border-primary/20 animate-slide-up" style={{ animationDelay: "0.2s" }}>
             <div className="flex items-center gap-4">
-              <div className="p-3 bg-primary/10 rounded-lg">
-                <Package className="h-6 w-6 text-primary" />
+              <div className="p-3 gradient-primary rounded-lg">
+                <Package className="h-6 w-6 text-primary-foreground" />
               </div>
               <div>
                 <p className="text-2xl font-bold">{stats.total}</p>
@@ -177,7 +179,7 @@ const Dashboard = () => {
         {/* Actions */}
         <div className="mb-8">
           <Link to="/submit">
-            <Button variant="hero" size="lg" className="w-full sm:w-auto">
+            <Button variant="hero" size="lg" className="w-full sm:w-auto shadow-vibrant hover:scale-105 transition-transform">
               <Plus className="h-5 w-5" />
               Submit New App
             </Button>
@@ -185,9 +187,11 @@ const Dashboard = () => {
         </div>
 
         {/* Apps List */}
-        <Card className="shadow-card">
+        <Card className="shadow-vibrant border-primary/20">
           <div className="p-6">
-            <h2 className="text-2xl font-bold mb-6">Your Applications</h2>
+            <h2 className="text-2xl font-bold mb-6 bg-gradient-primary bg-clip-text text-transparent">
+              Your Applications
+            </h2>
             
             {applications.length === 0 ? (
               <div className="text-center py-12">

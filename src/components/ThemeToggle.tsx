@@ -1,24 +1,19 @@
 import { Moon, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
 export const ThemeToggle = () => {
-  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const { resolvedTheme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem("theme") as "light" | "dark" | null;
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initialTheme = savedTheme || (prefersDark ? "dark" : "light");
-    
-    setTheme(initialTheme);
-    document.documentElement.classList.toggle("dark", initialTheme === "dark");
+    setMounted(true);
   }, []);
 
   const toggleTheme = () => {
-    const newTheme = theme === "light" ? "dark" : "light";
-    setTheme(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    const next = (resolvedTheme === "dark" ? "light" : "dark") as "light" | "dark";
+    setTheme(next);
   };
 
   return (
@@ -28,10 +23,10 @@ export const ThemeToggle = () => {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      {theme === "light" ? (
-        <Moon className="h-5 w-5" />
-      ) : (
+      {mounted && resolvedTheme === "dark" ? (
         <Sun className="h-5 w-5" />
+      ) : (
+        <Moon className="h-5 w-5" />
       )}
     </Button>
   );

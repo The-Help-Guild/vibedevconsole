@@ -47,11 +47,24 @@ export default function AdminDashboard() {
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
-    if (!roleLoading && !isAdmin) {
-      toast.error("Access denied: Admin privileges required");
-      navigate("/dashboard");
+    if (!roleLoading && !isAdmin && user) {
+      // Attempt one-time admin bootstrap if no admins exist
+      (async () => {
+        try {
+          const { data, error } = await supabase.functions.invoke("grant-admin", {});
+          if (!error && data?.granted) {
+            toast.success("Admin privileges granted. Reloading...");
+            window.location.reload();
+            return;
+          }
+        } catch (e) {
+          // ignore
+        }
+        toast.error("Access denied: Admin privileges required");
+        navigate("/dashboard");
+      })();
     }
-  }, [isAdmin, roleLoading, navigate]);
+  }, [isAdmin, roleLoading, navigate, user]);
 
   useEffect(() => {
     if (user && isAdmin) {

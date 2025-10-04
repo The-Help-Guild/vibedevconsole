@@ -1,10 +1,14 @@
 import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Code2, Shield, Zap, Users, Upload, Globe } from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Code2, Shield, Zap, Users, Upload, Globe, CheckCircle, Info } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Landing = () => {
+  const [learnMoreOpen, setLearnMoreOpen] = useState(false);
+
   return (
     <div className="min-h-screen">
       {/* Navigation */}
@@ -37,15 +41,142 @@ const Landing = () => {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth">
-              <Button variant="hero" size="lg" className="w-full sm:w-auto">
+              <Button variant="hero" size="lg" className="w-full sm:w-auto shadow-vibrant">
                 Start Publishing
               </Button>
             </Link>
-            <Link to="#features">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto">
-                Learn More
-              </Button>
-            </Link>
+            <Dialog open={learnMoreOpen} onOpenChange={setLearnMoreOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="lg" className="w-full sm:w-auto border-primary/30 hover:border-primary">
+                  <Info className="mr-2 h-5 w-5" />
+                  Learn More
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl bg-gradient-primary bg-clip-text text-transparent">
+                    About VibeDevConsole
+                  </DialogTitle>
+                  <DialogDescription>
+                    Your streamlined Android app publishing platform
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-6 py-4">
+                  {/* What is it */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Code2 className="h-5 w-5 text-primary" />
+                      What is VibeDevConsole?
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed">
+                      VibeDevConsole is a modern, developer-friendly platform designed to simplify the entire Android application publishing process. We provide a secure, compliant, and efficient environment where developers can submit, manage, and distribute their Android applications without the complexity and bureaucracy of traditional app stores.
+                    </p>
+                    <p className="text-muted-foreground leading-relaxed">
+                      Built with cutting-edge technology and security best practices, our platform ensures your apps and user data are protected while offering a seamless experience from submission to publication.
+                    </p>
+                  </div>
+
+                  {/* Who is it for */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Users className="h-5 w-5 text-accent" />
+                      Who is it for?
+                    </h3>
+                    <div className="grid gap-3">
+                      <Card className="p-4 border-primary/20">
+                        <h4 className="font-medium mb-2">Independent Developers</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Solo developers looking for a hassle-free way to publish their apps without dealing with complex submission processes.
+                        </p>
+                      </Card>
+                      <Card className="p-4 border-primary/20">
+                        <h4 className="font-medium mb-2">Small Development Teams</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Startups and small teams that need a fast, reliable platform to get their Android applications to market quickly.
+                        </p>
+                      </Card>
+                      <Card className="p-4 border-primary/20">
+                        <h4 className="font-medium mb-2">Enterprise Developers</h4>
+                        <p className="text-sm text-muted-foreground">
+                          Companies requiring GDPR-compliant, secure distribution channels for internal or customer-facing Android applications.
+                        </p>
+                      </Card>
+                    </div>
+                  </div>
+
+                  {/* Submission Process */}
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <Upload className="h-5 w-5 text-success" />
+                      APK Submission Process
+                    </h3>
+                    <p className="text-muted-foreground leading-relaxed mb-4">
+                      Our streamlined three-step process gets your app from development to publication in record time:
+                    </p>
+                    
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold">
+                          1
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">App Information</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Provide your app's metadata including name, description, category, version details, and screenshots. Our form validates everything in real-time to ensure accuracy.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold">
+                          2
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Upload APK File</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Simply drag and drop your .apk or .aab file (max 500MB). Our system securely stores your file with encrypted storage and generates signed URLs for downloads.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3">
+                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center text-primary-foreground font-bold">
+                          3
+                        </div>
+                        <div>
+                          <h4 className="font-medium mb-1">Review & Publish</h4>
+                          <p className="text-sm text-muted-foreground">
+                            Review your submission details and agree to our terms. Once submitted, our admin team reviews your app (typically 1-3 business days) to ensure it meets our guidelines before publication.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Card className="p-4 bg-gradient-to-r from-success/10 to-success/5 border-success/30 mt-4">
+                      <div className="flex gap-3">
+                        <CheckCircle className="h-5 w-5 text-success flex-shrink-0 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-success mb-1">After Approval</h4>
+                          <p className="text-sm text-muted-foreground">
+                            You'll receive email notifications throughout the process. Once approved, your app goes live immediately and you can track downloads, manage updates, and submit new versions through your dashboard.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="pt-4 border-t">
+                    <Link to="/auth" onClick={() => setLearnMoreOpen(false)}>
+                      <Button variant="hero" className="w-full shadow-vibrant">
+                        Get Started Now
+                      </Button>
+                    </Link>
+                  </div>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>

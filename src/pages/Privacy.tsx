@@ -45,13 +45,17 @@ const Privacy = () => {
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
                 <li>Name and email address (required for account creation)</li>
+                <li>Developer information (company name, phone number, physical address, website URL)</li>
                 <li>Application metadata (app names, descriptions, categories)</li>
-                <li>File data (APK files and associated assets)</li>
-                <li>Communication preferences</li>
+                <li>File data (APK files, screenshots, and associated assets)</li>
+                <li>App reviews and ratings you submit</li>
+                <li>Communication and consent preferences (GDPR, marketing)</li>
               </ul>
 
               <h3 className="text-xl font-semibold mb-3 mt-6">Technical Information</h3>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+                <li>Download history and timestamps</li>
+                <li>User agent strings (for analytics)</li>
                 <li>IP address and device information</li>
                 <li>Browser type and version</li>
                 <li>Usage data and analytics</li>
@@ -74,14 +78,16 @@ const Privacy = () => {
             <section>
               <h2 className="text-2xl font-bold mb-4">4. Data Security</h2>
               <p className="text-muted-foreground leading-relaxed">
-                We implement industry-standard security measures to protect your data:
+                We implement comprehensive security measures to protect your data:
               </p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground mt-4">
-                <li>End-to-end encryption for data in transit (TLS/SSL)</li>
-                <li>Encryption at rest for stored data</li>
-                <li>Regular security audits and updates</li>
-                <li>Access controls and authentication mechanisms</li>
-                <li>Secure backup and disaster recovery procedures</li>
+                <li><strong>Row-Level Security (RLS):</strong> Database-level access controls ensuring users can only access their own data</li>
+                <li><strong>Role-Based Access Control:</strong> Strict separation between admin, moderator, and developer permissions</li>
+                <li><strong>Rate Limiting:</strong> API endpoints protected against abuse (50 requests/hour for sensitive operations)</li>
+                <li><strong>Audit Logging:</strong> All administrative actions are logged and immutable</li>
+                <li><strong>Encryption:</strong> TLS/SSL for data in transit, encryption at rest for stored data</li>
+                <li><strong>Authentication Security:</strong> Google reCAPTCHA, password validation, and secure session management</li>
+                <li><strong>Regular Security Reviews:</strong> Automated security scans and manual reviews</li>
               </ul>
             </section>
 
@@ -105,19 +111,35 @@ const Privacy = () => {
 
             <section>
               <h2 className="text-2xl font-bold mb-4">6. Data Retention</h2>
-              <p className="text-muted-foreground leading-relaxed">
+              <p className="text-muted-foreground leading-relaxed mb-4">
                 We retain your personal data only as long as necessary to fulfill the purposes outlined in this
-                policy or as required by law. Upon request or account deletion, we will securely delete or
-                anonymize your data within 30 days, except where retention is required by law.
+                policy or as required by law:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+                <li><strong>Download Logs:</strong> Automatically deleted after 90 days</li>
+                <li><strong>Developer Contact Information:</strong> Retained while account is active, subject to 90-day review cycle</li>
+                <li><strong>App Reviews and Ratings:</strong> Retained while account is active or until deleted by user</li>
+                <li><strong>Audit Logs:</strong> Retained for compliance and security purposes as required by law</li>
+                <li><strong>Account Data:</strong> Upon request or account deletion, we will securely delete or anonymize your data within 30 days</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed mt-4">
+                Note: Some data may be retained longer where required by law or for legitimate business purposes (e.g., fraud prevention).
               </p>
             </section>
 
             <section>
               <h2 className="text-2xl font-bold mb-4">7. Third-Party Services</h2>
-              <p className="text-muted-foreground leading-relaxed">
-                We do not sell or rent your personal information to third parties. We may share data with trusted
-                service providers who assist in operating our platform, subject to strict confidentiality
-                agreements and GDPR/CCPA compliance requirements.
+              <p className="text-muted-foreground leading-relaxed mb-4">
+                We do not sell or rent your personal information to third parties. We use the following trusted
+                service providers to operate our platform:
+              </p>
+              <ul className="list-disc pl-6 space-y-2 text-muted-foreground">
+                <li><strong>Supabase:</strong> Backend database, authentication, and file storage (GDPR compliant)</li>
+                <li><strong>Google reCAPTCHA:</strong> Bot prevention during registration</li>
+                <li><strong>Resend:</strong> Transactional email delivery</li>
+              </ul>
+              <p className="text-muted-foreground leading-relaxed mt-4">
+                All service providers are subject to strict confidentiality agreements and GDPR/CCPA compliance requirements.
               </p>
             </section>
 

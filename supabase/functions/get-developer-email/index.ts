@@ -10,6 +10,28 @@ interface GetEmailRequest {
   userId: string;
 }
 
+// Rate limiting: Track requests per admin user
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
+const RATE_LIMIT = 50; // 50 requests per hour
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour in milliseconds
+
+function checkRateLimit(adminId: string): boolean {
+  const now = Date.now();
+  const userLimit = rateLimitMap.get(adminId);
+
+  if (!userLimit || now > userLimit.resetTime) {
+    rateLimitMap.set(adminId, { count: 1, resetTime: now + RATE_LIMIT_WINDOW });
+    return true;
+  }
+
+  if (userLimit.count >= RATE_LIMIT) {
+    return false;
+  }
+
+  userLimit.count++;
+  return true;
+}
+
 const handler = async (req: Request): Promise<Response> => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -63,6 +85,20 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
+    // Check rate limit
+    if (!checkRateLimit(user.id)) {
+      console.warn(`Rate limit exceeded for admin ${user.email}`);
+      return new Response(
+        JSON.stringify({ 
+          error: "Rate limit exceeded. Maximum 50 requests per hour." 
+        }),
+        {
+          status: 429,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Verify the requesting user is an admin
     const { data: roles, error: rolesError } = await supabaseClient
       .from("user_roles")
@@ -98,7 +134,7 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
 
-    console.log(`Admin ${user.email} accessed email for user ${userId}`);
+    console.log(`Admin ${user.email} accessed email for user ${userId} (Rate limit: ${rateLimitMap.get(user.id)?.count}/${RATE_LIMIT})`);
 
     return new Response(
       JSON.stringify({ email: userData.user.email }),

@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Code2, ShieldCheck } from "lucide-react";
+import { Code2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import ReCAPTCHA from "react-google-recaptcha";
 
 const passwordSchema = z.string()
   .min(8, "Password must be at least 8 characters")
@@ -17,9 +16,6 @@ const passwordSchema = z.string()
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
-
-// Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
-const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -29,9 +25,7 @@ const Auth = () => {
   const [gdprConsent, setGdprConsent] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,34 +43,6 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate CAPTCHA
-      if (!captchaToken) {
-        toast({
-          title: "CAPTCHA Required",
-          description: "Please complete the CAPTCHA verification.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Verify CAPTCHA with backend
-      const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('verify-recaptcha', {
-        body: { token: captchaToken }
-      });
-
-      if (verificationError || !verificationResult?.success) {
-        toast({
-          title: "Verification Failed",
-          description: "CAPTCHA verification failed. Please try again.",
-          variant: "destructive",
-        });
-        recaptchaRef.current?.reset();
-        setCaptchaToken(null);
-        setLoading(false);
-        return;
-      }
-
       // Validate terms acceptance for both login and signup
       if (!termsAccepted) {
         toast({
@@ -144,19 +110,12 @@ const Auth = () => {
           description: "Please check your email to verify your account.",
         });
       }
-
-      // Reset CAPTCHA after successful submission
-      recaptchaRef.current?.reset();
-      setCaptchaToken(null);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "An error occurred. Please try again.",
         variant: "destructive",
       });
-      // Reset CAPTCHA on error
-      recaptchaRef.current?.reset();
-      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -289,21 +248,6 @@ const Auth = () => {
                   </div>
                 </>
               )}
-
-              {/* CAPTCHA verification required */}
-              <div className="flex flex-col items-center gap-2 pt-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span>Security verification required</span>
-                </div>
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={(token) => setCaptchaToken(token)}
-                  onExpired={() => setCaptchaToken(null)}
-                  theme="light"
-                />
-              </div>
             </div>
           </CardContent>
 
@@ -326,8 +270,6 @@ const Auth = () => {
                 // Reset form state when switching
                 setTermsAccepted(false);
                 setGdprConsent(false);
-                setCaptchaToken(null);
-                recaptchaRef.current?.reset();
               }}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >

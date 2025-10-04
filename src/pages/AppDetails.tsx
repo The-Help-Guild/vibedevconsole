@@ -5,10 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Download, Star, Calendar, Package } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { ArrowLeft, Download, Star, Calendar, Package, MessageSquare, Maximize2 } from "lucide-react";
 import { SecureFileDownload } from "@/components/SecureFileDownload";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 type Application = {
   id: string;
@@ -27,18 +30,41 @@ type Application = {
   published_at: string | null;
 };
 
+type Review = {
+  id: string;
+  user_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 export default function AppDetails() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const [app, setApp] = useState<Application | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState<Review | null>(null);
+  const [newRating, setNewRating] = useState(0);
+  const [newComment, setNewComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [zoomedImage, setZoomedImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
       fetchAppDetails(id);
+      fetchReviews(id);
     }
   }, [id]);
+
+  useEffect(() => {
+    if (id && user) {
+      fetchUserReview(id);
+    }
+  }, [id, user]);
 
   const fetchAppDetails = async (appId: string) => {
     try {
@@ -61,6 +87,128 @@ export default function AppDetails() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchReviews = async (appId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("app_reviews")
+        .select("*")
+        .eq("application_id", appId)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+      setReviews(data || []);
+    } catch (error) {
+      console.error("Error fetching reviews:", error);
+    }
+  };
+
+  const fetchUserReview = async (appId: string) => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from("app_reviews")
+        .select("*")
+        .eq("application_id", appId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setUserReview(data);
+        setNewRating(data.rating);
+        setNewComment(data.comment || "");
+      }
+    } catch (error) {
+      console.error("Error fetching user review:", error);
+    }
+  };
+
+  const handleSubmitReview = async () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to leave a review",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    if (newRating === 0) {
+      toast({
+        title: "Rating Required",
+        description: "Please select a star rating",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSubmittingReview(true);
+    try {
+      const reviewData = {
+        application_id: id!,
+        user_id: user.id,
+        rating: newRating,
+        comment: newComment.trim() || null,
+      };
+
+      if (userReview) {
+        const { error } = await supabase
+          .from("app_reviews")
+          .update(reviewData)
+          .eq("id", userReview.id);
+
+        if (error) throw error;
+        toast({
+          title: "Review Updated",
+          description: "Your review has been updated successfully",
+        });
+      } else {
+        const { error } = await supabase
+          .from("app_reviews")
+          .insert(reviewData);
+
+        if (error) throw error;
+        toast({
+          title: "Review Submitted",
+          description: "Thank you for your review!",
+        });
+      }
+
+      await fetchReviews(id!);
+      await fetchUserReview(id!);
+      await fetchAppDetails(id!);
+    } catch (error: any) {
+      console.error("Error submitting review:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to submit review",
+        variant: "destructive",
+      });
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
+
+  const renderStars = (rating: number, interactive: boolean = false, onRate?: (rating: number) => void) => {
+    return (
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Star
+            key={star}
+            className={`w-5 h-5 ${
+              star <= rating
+                ? "fill-yellow-500 text-yellow-500"
+                : "text-muted-foreground"
+            } ${interactive ? "cursor-pointer hover:scale-110 transition-transform" : ""}`}
+            onClick={() => interactive && onRate?.(star)}
+          />
+        ))}
+      </div>
+    );
   };
 
   if (loading) {
@@ -182,16 +330,25 @@ export default function AppDetails() {
               <Card>
                 <CardHeader>
                   <CardTitle>Screenshots</CardTitle>
+                  <CardDescription>Click on any image to view full size</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {app.screenshots.map((screenshot, index) => (
-                      <img
+                      <div
                         key={index}
-                        src={screenshot}
-                        alt={`${app.app_name} screenshot ${index + 1}`}
-                        className="w-full rounded-lg border object-cover aspect-video"
-                      />
+                        className="relative group cursor-pointer overflow-hidden rounded-lg border"
+                        onClick={() => setZoomedImage(screenshot)}
+                      >
+                        <img
+                          src={screenshot}
+                          alt={`${app.app_name} screenshot ${index + 1}`}
+                          className="w-full object-cover aspect-video transition-transform group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
+                          <Maximize2 className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </CardContent>
@@ -215,6 +372,99 @@ export default function AppDetails() {
                     No detailed description available.
                   </p>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Reviews Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5" />
+                  Reviews & Ratings
+                </CardTitle>
+                <CardDescription>
+                  {reviews.length} {reviews.length === 1 ? "review" : "reviews"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {/* Write Review */}
+                <div className="border rounded-lg p-4 bg-muted/30">
+                  <h3 className="font-semibold mb-3">
+                    {userReview ? "Update Your Review" : "Write a Review"}
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Your Rating</label>
+                      {renderStars(newRating, true, setNewRating)}
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Your Comment (Optional)</label>
+                      <Textarea
+                        placeholder="Share your thoughts about this app..."
+                        value={newComment}
+                        onChange={(e) => setNewComment(e.target.value)}
+                        rows={4}
+                        maxLength={1000}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {newComment.length}/1000 characters
+                      </p>
+                    </div>
+                    <Button
+                      onClick={handleSubmitReview}
+                      disabled={submittingReview || newRating === 0}
+                      className="w-full"
+                    >
+                      {submittingReview
+                        ? "Submitting..."
+                        : userReview
+                        ? "Update Review"
+                        : "Submit Review"}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Display Reviews */}
+                <div className="space-y-4">
+                  {reviews.length === 0 ? (
+                    <p className="text-center text-muted-foreground py-8">
+                      No reviews yet. Be the first to review this app!
+                    </p>
+                  ) : (
+                    reviews.map((review) => (
+                      <div
+                        key={review.id}
+                        className="border rounded-lg p-4 space-y-2 hover:bg-muted/30 transition-colors"
+                      >
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                              <span className="text-sm font-semibold text-primary">
+                                {review.user_id.substring(0, 2).toUpperCase()}
+                              </span>
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                {renderStars(review.rating)}
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {new Date(review.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          {user?.id === review.user_id && (
+                            <Badge variant="secondary">Your Review</Badge>
+                          )}
+                        </div>
+                        {review.comment && (
+                          <p className="text-sm text-foreground leading-relaxed pl-13">
+                            {review.comment}
+                          </p>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
               </CardContent>
             </Card>
           </div>
@@ -313,6 +563,24 @@ export default function AppDetails() {
           </div>
         </div>
       </main>
+
+      {/* Image Zoom Dialog */}
+      <Dialog open={!!zoomedImage} onOpenChange={() => setZoomedImage(null)}>
+        <DialogContent className="max-w-4xl w-full p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle>Screenshot</DialogTitle>
+          </DialogHeader>
+          {zoomedImage && (
+            <div className="p-6 pt-4">
+              <img
+                src={zoomedImage}
+                alt="Zoomed screenshot"
+                className="w-full rounded-lg"
+              />
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

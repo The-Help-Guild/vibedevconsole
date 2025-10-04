@@ -37,21 +37,17 @@ serve(async (req) => {
 
     const userId = userData.user.id;
 
-    // Check if any admin already exists
-    const { data: adminCount, error: countError } = await admin
+    // Check if any admin already exists (use count)
+    const { count: adminCount, error: countError } = await admin
       .from("user_roles")
-      .select("id", { count: "exact", head: true })
+      .select("*", { count: "exact", head: true })
       .eq("role", "admin");
 
     if (countError) {
       return new Response(JSON.stringify({ error: countError.message }), { status: 500, headers: corsHeaders });
     }
 
-    if ((adminCount as any) === null) {
-      // head: true returns null data; use header count instead
-    }
-
-    const totalAdmins = (adminCount as any)?.length ?? Number((admin as any).headers?.get?.("content-range")?.split("/")[1]) || 0;
+    const totalAdmins = adminCount ?? 0;
 
     if (totalAdmins > 0) {
       return new Response(JSON.stringify({ granted: false, reason: "Admin already exists" }), { status: 403, headers: corsHeaders });

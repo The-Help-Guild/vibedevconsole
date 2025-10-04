@@ -19,7 +19,7 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
-const RECAPTCHA_SITE_KEY = "6LfYGqkqAAAAANzsXxIQyv0Kl-VDqLkJ4cYZlAkV";
+const RECAPTCHA_SITE_KEY = "6LecdN4rAAAAAAusXVgeEx8ewmJeu75n3OYUbtK-";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);

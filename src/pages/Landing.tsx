@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Code2, Shield, Zap, Users, Upload, Globe } from "lucide-react";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 const Landing = () => {
   return (
@@ -11,9 +12,10 @@ const Landing = () => {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Code2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">DevConsole</span>
+            <span className="text-xl font-bold">VibeDevConsole</span>
           </div>
           <div className="flex items-center gap-4">
+            <ThemeToggle />
             <Link to="/auth">
               <Button variant="ghost">Sign In</Button>
             </Link>
@@ -50,8 +52,8 @@ const Landing = () => {
 
       {/* Features Section */}
       <section id="features" className="container mx-auto px-4 py-20 bg-muted/30">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4">Why Choose DevConsole?</h2>
+          <div className="text-center mb-16">
+          <h2 className="text-4xl font-bold mb-4">Why Choose VibeDevConsole?</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Built for developers who value speed, security, and simplicity
           </p>
@@ -144,7 +146,7 @@ const Landing = () => {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <Code2 className="h-6 w-6 text-primary" />
-                <span className="font-bold">DevConsole</span>
+                <span className="font-bold">VibeDevConsole</span>
               </div>
               <p className="text-sm text-muted-foreground">
                 The streamlined Android app publishing platform for modern developers.
@@ -162,19 +164,19 @@ const Landing = () => {
               </div>
             </div>
             <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
+              <h3 className="font-semibold mb-4">Contact</h3>
               <div className="space-y-2">
+                <a href="mailto:vibedeveloper@proton.me" className="block text-sm text-muted-foreground hover:text-foreground">
+                  vibedeveloper@proton.me
+                </a>
                 <a href="#features" className="block text-sm text-muted-foreground hover:text-foreground">
                   Features
                 </a>
-                <Link to="/auth" className="block text-sm text-muted-foreground hover:text-foreground">
-                  Get Started
-                </Link>
               </div>
             </div>
           </div>
           <div className="text-center text-sm text-muted-foreground border-t pt-8">
-            © {new Date().getFullYear()} DevConsole. All rights reserved.
+            © {new Date().getFullYear()} vibedeveloper. All rights reserved.
           </div>
         </div>
       </footer>

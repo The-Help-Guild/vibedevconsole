@@ -37,11 +37,11 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32">
         <div className="text-center max-w-4xl mx-auto animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in">
             <ScrambleText 
               text="VibeDevConsole"
-              scrambleDuration={2500}
-              scrambleSpeed={40}
+              scrambleDuration={3000}
+              scrambleSpeed={30}
             />
           </h1>
           <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg max-w-2xl mx-auto">

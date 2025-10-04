@@ -6,22 +6,21 @@ interface ScrambleTextProps {
   scrambleSpeed?: number;
 }
 
-const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+const CYBER_CHARS = "█▓▒░01※◆◇◈◉○●★☆♦♢▪▫■□";
 
 export const ScrambleText = ({ 
   text, 
-  scrambleDuration = 2000,
-  scrambleSpeed = 50
+  scrambleDuration = 3000,
+  scrambleSpeed = 30
 }: ScrambleTextProps) => {
-  // Start with random characters instead of spaces
+  // Start with random cyber characters
   const [displayText, setDisplayText] = useState(
     text.split("").map((char) => 
-      char === " " ? " " : CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]
+      char === " " ? " " : CYBER_CHARS[Math.floor(Math.random() * CYBER_CHARS.length)]
     )
   );
-  const [isComplete, setIsComplete] = useState(false);
+  const [revealedIndices, setRevealedIndices] = useState<Set<number>>(new Set());
   const intervalRef = useRef<NodeJS.Timeout>();
-  const timeoutRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     let iteration = 0;
@@ -31,19 +30,18 @@ export const ScrambleText = ({
     intervalRef.current = setInterval(() => {
       setDisplayText((prev) =>
         charsArray.map((char, index) => {
-          // Space should remain space
           if (char === " ") return " ";
           
-          // Calculate when this character should be revealed
-          const revealPoint = (index / charsArray.length) * totalIterations;
+          // Calculate when this character should be revealed with stagger
+          const revealPoint = (index / charsArray.length) * totalIterations * 0.7;
           
-          // If we've passed this character's reveal point, show the correct character
           if (iteration > revealPoint) {
+            setRevealedIndices(prev => new Set(prev).add(index));
             return char;
           }
           
-          // Otherwise, show a random character
-          return CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)];
+          // Show random cyber characters
+          return CYBER_CHARS[Math.floor(Math.random() * CYBER_CHARS.length)];
         })
       );
 
@@ -52,25 +50,62 @@ export const ScrambleText = ({
       if (iteration >= totalIterations) {
         clearInterval(intervalRef.current);
         setDisplayText(charsArray);
-        setIsComplete(true);
+        setRevealedIndices(new Set(charsArray.map((_, i) => i)));
       }
     }, scrambleSpeed);
 
-    // Cleanup
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
     };
   }, [text, scrambleDuration, scrambleSpeed]);
 
   return (
-    <span className="inline-block">
-      {displayText.map((char, index) => (
-        <span key={index} className="inline-block">
-          {char}
-        </span>
-      ))}
-    </span>
+    <>
+      <style>{`
+        @keyframes glitch {
+          0%, 100% { 
+            transform: translateX(0) translateY(0);
+            filter: hue-rotate(0deg);
+          }
+          25% { 
+            transform: translateX(-2px) translateY(1px);
+            filter: hue-rotate(20deg);
+          }
+          50% { 
+            transform: translateX(2px) translateY(-1px);
+            filter: hue-rotate(-20deg);
+          }
+          75% { 
+            transform: translateX(-1px) translateY(-2px);
+            filter: hue-rotate(10deg);
+          }
+        }
+      `}</style>
+      <span className="inline-block relative">
+        {displayText.map((char, index) => {
+          const isRevealed = revealedIndices.has(index);
+          return (
+            <span
+              key={index}
+              className={`inline-block transition-all duration-300 ${
+                isRevealed 
+                  ? 'text-shadow-glow scale-100 opacity-100' 
+                  : 'opacity-70 scale-95 blur-[1px]'
+              }`}
+              style={{
+                textShadow: isRevealed 
+                  ? '0 0 20px currentColor, 0 0 40px currentColor' 
+                  : '0 0 5px currentColor',
+                animation: !isRevealed ? 'glitch 0.3s infinite' : 'none',
+                animationDelay: `${index * 0.05}s`,
+              }}
+            >
+              {char}
+            </span>
+          );
+        })}
+      </span>
+    </>
   );
 };
 

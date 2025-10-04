@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Code2, Shield, Zap, Users, Upload, Globe, CheckCircle, Info } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { ScrambleText } from "@/components/ScrambleText";
 
 const Landing = () => {
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
@@ -36,8 +37,13 @@ const Landing = () => {
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-20 md:py-32">
         <div className="text-center max-w-4xl mx-auto animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent gradient-hero">
-            Publish Your Android Apps
+          <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <ScrambleText 
+              text="VibeDevConsole"
+              className="bg-clip-text text-transparent gradient-hero"
+              scrambleDuration={2500}
+              scrambleSpeed={40}
+            />
           </h1>
           <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg max-w-2xl mx-auto">
             <p className="text-base md:text-lg font-semibold text-primary">

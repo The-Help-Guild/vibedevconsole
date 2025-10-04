@@ -1,14 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Code2 } from "lucide-react";
+import { Code2, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import ReCAPTCHA from "react-google-recaptcha";
+import { sanitizeText, isValidEmail, getRateLimitIdentifier } from "@/lib/sanitize";
 
 const passwordSchema = z.string()
   .min(8, "Password must be at least 8 characters")
@@ -16,6 +18,8 @@ const passwordSchema = z.string()
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
+
+const RECAPTCHA_SITE_KEY = "6LfYGqkqAAAAANzsXxIQyv0Kl-VDqLkJ4cYZlAkV";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -26,6 +30,8 @@ const Auth = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -43,6 +49,68 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate reCAPTCHA
+      if (!recaptchaToken) {
+        toast({
+          title: "Security Check Required",
+          description: "Please complete the security verification.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Verify reCAPTCHA with backend
+      const { data: captchaData, error: captchaError } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token: recaptchaToken }
+      });
+
+      if (captchaError || !captchaData?.success) {
+        toast({
+          title: "Security Check Failed",
+          description: "Please try again or refresh the page.",
+          variant: "destructive",
+        });
+        recaptchaRef.current?.reset();
+        setRecaptchaToken(null);
+        setLoading(false);
+        return;
+      }
+
+      // Check rate limiting
+      const rateLimitId = getRateLimitIdentifier();
+      const { data: rateLimitData, error: rateLimitError } = await supabase.functions.invoke('rate-limit-auth', {
+        body: { 
+          identifier: rateLimitId,
+          action: isLogin ? 'login' : 'signup'
+        }
+      });
+
+      if (rateLimitError || !rateLimitData?.allowed) {
+        toast({
+          title: "Too Many Attempts",
+          description: rateLimitData?.error || "Please try again later.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Sanitize inputs
+      const sanitizedEmail = sanitizeText(email.toLowerCase().trim(), 255);
+      const sanitizedName = name ? sanitizeText(name, 100) : "";
+
+      // Additional email validation
+      if (!isValidEmail(sanitizedEmail)) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       // Validate terms acceptance for both login and signup
       if (!termsAccepted) {
         toast({
@@ -56,7 +124,7 @@ const Auth = () => {
 
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
-          email,
+          email: sanitizedEmail,
           password,
         });
 
@@ -91,12 +159,12 @@ const Auth = () => {
         }
 
         const { error } = await supabase.auth.signUp({
-          email,
+          email: sanitizedEmail,
           password,
           options: {
             emailRedirectTo: `${window.location.origin}/dashboard`,
             data: {
-              name,
+              name: sanitizedName,
               marketing_consent: marketingConsent,
               gdpr_consent: gdprConsent,
             },
@@ -111,6 +179,10 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
+      // Reset reCAPTCHA on error
+      recaptchaRef.current?.reset();
+      setRecaptchaToken(null);
+      
       toast({
         title: "Error",
         description: error.message || "An error occurred. Please try again.",
@@ -243,16 +315,36 @@ const Auth = () => {
                       onCheckedChange={(checked) => setMarketingConsent(checked === true)}
                     />
                     <label htmlFor="marketing" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      I would like to receive product updates and marketing communications (optional)
-                    </label>
-                  </div>
-                </>
-              )}
-            </div>
-          </CardContent>
+                   I would like to receive product updates and marketing communications (optional)
+                </label>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* reCAPTCHA */}
+        <div className="flex flex-col items-center gap-2 pt-4">
+          <ReCAPTCHA
+            ref={recaptchaRef}
+            sitekey={RECAPTCHA_SITE_KEY}
+            onChange={(token) => setRecaptchaToken(token)}
+            onExpired={() => setRecaptchaToken(null)}
+            theme="dark"
+          />
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <Shield className="h-3 w-3" />
+            <span>Protected by reCAPTCHA</span>
+          </div>
+        </div>
+      </CardContent>
 
           <CardFooter className="flex flex-col gap-4">
-            <Button type="submit" variant="hero" className="w-full shadow-glow" disabled={loading}>
+            <Button 
+              type="submit" 
+              variant="hero" 
+              className="w-full shadow-glow" 
+              disabled={loading || !recaptchaToken}
+            >
               {loading ? (
                 <span className="flex items-center gap-2">
                   <span className="animate-spin">⚡</span>

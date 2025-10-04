@@ -14,16 +14,213 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          apk_file_path: string | null
+          app_name: string
+          category: Database["public"]["Enums"]["app_category"]
+          created_at: string
+          developer_id: string
+          downloads: number
+          icon_url: string | null
+          id: string
+          long_description: string | null
+          package_name: string
+          published_at: string | null
+          rating: number | null
+          screenshots: string[] | null
+          short_description: string
+          status: Database["public"]["Enums"]["app_status"]
+          updated_at: string
+          version_code: number
+          version_name: string
+        }
+        Insert: {
+          apk_file_path?: string | null
+          app_name: string
+          category: Database["public"]["Enums"]["app_category"]
+          created_at?: string
+          developer_id: string
+          downloads?: number
+          icon_url?: string | null
+          id?: string
+          long_description?: string | null
+          package_name: string
+          published_at?: string | null
+          rating?: number | null
+          screenshots?: string[] | null
+          short_description: string
+          status?: Database["public"]["Enums"]["app_status"]
+          updated_at?: string
+          version_code?: number
+          version_name?: string
+        }
+        Update: {
+          apk_file_path?: string | null
+          app_name?: string
+          category?: Database["public"]["Enums"]["app_category"]
+          created_at?: string
+          developer_id?: string
+          downloads?: number
+          icon_url?: string | null
+          id?: string
+          long_description?: string | null
+          package_name?: string
+          published_at?: string | null
+          rating?: number | null
+          screenshots?: string[] | null
+          short_description?: string
+          status?: Database["public"]["Enums"]["app_status"]
+          updated_at?: string
+          version_code?: number
+          version_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_developer_id_fkey"
+            columns: ["developer_id"]
+            isOneToOne: false
+            referencedRelation: "developer_profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      developer_profiles: {
+        Row: {
+          address: string | null
+          company_name: string | null
+          created_at: string
+          gdpr_consent: boolean
+          id: string
+          marketing_consent: boolean
+          phone_number: string | null
+          updated_at: string
+          user_id: string
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          gdpr_consent?: boolean
+          id?: string
+          marketing_consent?: boolean
+          phone_number?: string | null
+          updated_at?: string
+          user_id: string
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          company_name?: string | null
+          created_at?: string
+          gdpr_consent?: boolean
+          id?: string
+          marketing_consent?: boolean
+          phone_number?: string | null
+          updated_at?: string
+          user_id?: string
+          website_url?: string | null
+        }
+        Relationships: []
+      }
+      submission_history: {
+        Row: {
+          apk_file_path: string | null
+          application_id: string
+          id: string
+          review_notes: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["app_status"]
+          submitted_at: string
+          submitted_by: string
+          version_code: number
+          version_name: string
+        }
+        Insert: {
+          apk_file_path?: string | null
+          application_id: string
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status: Database["public"]["Enums"]["app_status"]
+          submitted_at?: string
+          submitted_by: string
+          version_code: number
+          version_name: string
+        }
+        Update: {
+          apk_file_path?: string | null
+          application_id?: string
+          id?: string
+          review_notes?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["app_status"]
+          submitted_at?: string
+          submitted_by?: string
+          version_code?: number
+          version_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "submission_history_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_category:
+        | "games"
+        | "social"
+        | "productivity"
+        | "entertainment"
+        | "education"
+        | "lifestyle"
+        | "business"
+        | "utilities"
+        | "other"
+      app_role: "admin" | "moderator" | "developer"
+      app_status: "draft" | "pending" | "published" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +347,20 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_category: [
+        "games",
+        "social",
+        "productivity",
+        "entertainment",
+        "education",
+        "lifestyle",
+        "business",
+        "utilities",
+        "other",
+      ],
+      app_role: ["admin", "moderator", "developer"],
+      app_status: ["draft", "pending", "published", "rejected"],
+    },
   },
 } as const

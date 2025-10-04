@@ -8,6 +8,14 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Code2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { z } from "zod";
+
+const passwordSchema = z.string()
+  .min(8, "Password must be at least 8 characters")
+  .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+  .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+  .regex(/[0-9]/, "Password must contain at least one number")
+  .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -39,6 +47,18 @@ const Auth = () => {
         });
         navigate("/dashboard");
       } else {
+        // Validate password strength for signup
+        const passwordValidation = passwordSchema.safeParse(password);
+        if (!passwordValidation.success) {
+          toast({
+            title: "Weak Password",
+            description: passwordValidation.error.errors[0].message,
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
         if (!gdprConsent) {
           toast({
             title: "Consent Required",
@@ -131,8 +151,13 @@ const Auth = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
               />
+              {!isLogin && (
+                <p className="text-xs text-muted-foreground">
+                  Must be at least 8 characters with uppercase, lowercase, number, and special character
+                </p>
+              )}
             </div>
 
             {!isLogin && (

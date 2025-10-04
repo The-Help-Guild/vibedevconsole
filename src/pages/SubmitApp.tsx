@@ -11,6 +11,23 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code2, ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
 import { toast } from "sonner";
+import { z } from "zod";
+
+const packageNameSchema = z.string()
+  .regex(/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/, "Invalid package name format (e.g., com.example.app)");
+
+const versionNameSchema = z.string()
+  .regex(/^\d+\.\d+\.\d+$/, "Version must follow semantic versioning (e.g., 1.0.0)");
+
+const appMetadataSchema = z.object({
+  appName: z.string().min(1, "App name is required").max(100, "App name must be less than 100 characters"),
+  packageName: packageNameSchema,
+  shortDescription: z.string().min(1, "Short description is required").max(80, "Short description must be 80 characters or less"),
+  longDescription: z.string().min(10, "Long description must be at least 10 characters").max(4000, "Long description must be 4000 characters or less"),
+  category: z.string().min(1, "Category is required"),
+  versionName: versionNameSchema,
+  versionCode: z.number().int().positive("Version code must be a positive integer"),
+});
 
 interface FormData {
   appName: string;
@@ -44,15 +61,21 @@ const SubmitApp = () => {
 
   const handleNext = () => {
     if (step === 1) {
-      if (!formData.appName || !formData.packageName || !formData.shortDescription || 
-          !formData.longDescription || !formData.category) {
-        toast.error("Please fill in all required fields");
+      // Validate app metadata with Zod
+      const validation = appMetadataSchema.safeParse(formData);
+      if (!validation.success) {
+        toast.error(validation.error.errors[0].message);
         return;
       }
     }
     if (step === 2) {
       if (!apkFile) {
         toast.error("Please upload your APK file");
+        return;
+      }
+      // Validate APK file type
+      if (!apkFile.name.endsWith('.apk') && !apkFile.name.endsWith('.aab')) {
+        toast.error("File must be .apk or .aab format");
         return;
       }
     }
@@ -65,10 +88,25 @@ const SubmitApp = () => {
 
   const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    
+    // Validate file count
     if (files.length + screenshots.length > 5) {
       toast.error("You can upload a maximum of 5 screenshots");
       return;
     }
+    
+    // Validate file types and sizes
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`${file.name} is not a valid image file`);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`${file.name} exceeds maximum size of 10MB`);
+        return;
+      }
+    }
+    
     setScreenshots([...screenshots, ...files]);
   };
 

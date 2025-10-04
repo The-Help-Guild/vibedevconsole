@@ -28,26 +28,22 @@ export function SecureFileDownload({
   const handleDownload = async () => {
     setLoading(true);
     try {
-      // Get current user
+      // Get current user (optional for public downloads)
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        throw new Error("You must be logged in to download files");
-      }
 
-      // Verify access by attempting to generate signed URL
-      // RLS policies on storage.objects will enforce access control
+      // Generate signed URL for download
       const { data, error } = await supabase.storage
         .from(bucketName)
         .createSignedUrl(filePath, 3600);
 
       if (error) {
-        console.error("Access denied:", error);
-        throw new Error("Access denied. You don't have permission to download this file.");
+        console.error("Download error:", error);
+        throw new Error("Failed to generate download link. Please try again.");
       }
       if (!data?.signedUrl) throw new Error("Failed to generate download link");
 
-      // Log APK downloads for audit trail
-      if (bucketName === "apk-files" && applicationId) {
+      // Log APK downloads for audit trail (only if user is authenticated)
+      if (bucketName === "apk-files" && applicationId && user) {
         const { error: logError } = await supabase
           .from("apk_downloads")
           .insert({

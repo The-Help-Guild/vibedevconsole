@@ -286,7 +286,11 @@ export default function AppDetails() {
           </div>
           <div className="flex items-center gap-4">
             <ThemeToggle />
-            <Button onClick={() => navigate("/auth")}>Sign In</Button>
+            {user ? (
+              <Button onClick={() => navigate("/dashboard")}>Dashboard</Button>
+            ) : (
+              <Button onClick={() => navigate("/auth")}>Sign In</Button>
+            )}
           </div>
         </div>
       </header>
@@ -388,41 +392,56 @@ export default function AppDetails() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Write Review */}
-                <div className="border rounded-lg p-4 bg-muted/30">
-                  <h3 className="font-semibold mb-3">
-                    {userReview ? "Update Your Review" : "Write a Review"}
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Your Rating</label>
-                      {renderStars(newRating, true, setNewRating)}
+                {user ? (
+                  <div className="border rounded-lg p-4 bg-muted/30">
+                    <h3 className="font-semibold mb-3">
+                      {userReview ? "Update Your Review" : "Write a Review"}
+                    </h3>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Your Rating</label>
+                        {renderStars(newRating, true, setNewRating)}
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Your Comment (Optional)</label>
+                        <Textarea
+                          placeholder="Share your thoughts about this app..."
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          rows={4}
+                          maxLength={1000}
+                        />
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {newComment.length}/1000 characters
+                        </p>
+                      </div>
+                      <Button
+                        onClick={handleSubmitReview}
+                        disabled={submittingReview || newRating === 0}
+                        className="w-full"
+                      >
+                        {submittingReview
+                          ? "Submitting..."
+                          : userReview
+                          ? "Update Review"
+                          : "Submit Review"}
+                      </Button>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Your Comment (Optional)</label>
-                      <Textarea
-                        placeholder="Share your thoughts about this app..."
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        rows={4}
-                        maxLength={1000}
-                      />
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {newComment.length}/1000 characters
-                      </p>
-                    </div>
-                    <Button
-                      onClick={handleSubmitReview}
-                      disabled={submittingReview || newRating === 0}
-                      className="w-full"
-                    >
-                      {submittingReview
-                        ? "Submitting..."
-                        : userReview
-                        ? "Update Review"
-                        : "Submit Review"}
-                    </Button>
                   </div>
-                </div>
+                ) : (
+                  <div className="border rounded-lg p-6 bg-primary/5 text-center space-y-3">
+                    <MessageSquare className="w-12 h-12 mx-auto text-primary/60" />
+                    <div>
+                      <h3 className="font-semibold mb-1">Sign in to Review</h3>
+                      <p className="text-sm text-muted-foreground mb-4">
+                        Join our community of developers to share your thoughts and rate this app
+                      </p>
+                      <Button onClick={() => navigate("/auth")} className="w-full">
+                        Sign In or Create Account
+                      </Button>
+                    </div>
+                  </div>
+                )}
 
                 {/* Display Reviews */}
                 <div className="space-y-4">

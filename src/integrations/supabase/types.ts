@@ -44,6 +44,41 @@ export type Database = {
         }
         Relationships: []
       }
+      apk_downloads: {
+        Row: {
+          apk_file_path: string
+          application_id: string
+          downloaded_at: string
+          id: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          apk_file_path: string
+          application_id: string
+          downloaded_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          apk_file_path?: string
+          application_id?: string
+          downloaded_at?: string
+          id?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "apk_downloads_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       applications: {
         Row: {
           apk_file_path: string | null

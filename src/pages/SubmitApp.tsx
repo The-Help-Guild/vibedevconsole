@@ -119,19 +119,19 @@ const SubmitApp = () => {
       // Create application record
       const { data, error } = await supabase
         .from("applications")
-        .insert({
+        .insert([{
           app_name: formData.appName,
           package_name: formData.packageName,
           short_description: formData.shortDescription,
           long_description: formData.longDescription,
-          category: formData.category,
+          category: formData.category as "games" | "social" | "productivity" | "entertainment" | "education" | "lifestyle" | "business" | "utilities" | "other",
           version_name: formData.versionName,
           version_code: formData.versionCode,
           developer_id: user.id,
           apk_file_path: apkPath,
           screenshots: screenshotUrls,
-          status: "pending",
-        })
+          status: "pending" as "pending",
+        }])
         .select()
         .single();
 

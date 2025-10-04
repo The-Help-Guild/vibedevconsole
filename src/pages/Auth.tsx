@@ -20,7 +20,10 @@ const passwordSchema = z.string()
 
 // Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
 // CAPTCHA is currently optional - replace with your own key to enable
-const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV";
+const RECAPTCHA_SITE_KEY = ""; // leave empty to disable
+const CAPTCHA_ENABLED = Boolean(
+  RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV"
+);
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -269,13 +272,19 @@ const Auth = () => {
                   <ShieldCheck className="h-4 w-4" />
                   <span>Security verification (optional)</span>
                 </div>
-                <ReCAPTCHA
-                  ref={recaptchaRef}
-                  sitekey={RECAPTCHA_SITE_KEY}
-                  onChange={(token) => setCaptchaToken(token)}
-                  onExpired={() => setCaptchaToken(null)}
-                  theme="light"
-                />
+                {CAPTCHA_ENABLED ? (
+                  <ReCAPTCHA
+                    ref={recaptchaRef}
+                    sitekey={RECAPTCHA_SITE_KEY}
+                    onChange={(token) => setCaptchaToken(token)}
+                    onExpired={() => setCaptchaToken(null)}
+                    theme="light"
+                  />
+                ) : (
+                  <div className="text-xs text-muted-foreground">
+                    CAPTCHA disabled. Add a valid site key to enable.
+                  </div>
+                )}
               </div>
             </div>
           </CardContent>

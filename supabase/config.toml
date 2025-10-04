@@ -9,8 +9,5 @@ verify_jwt = true
 [functions.get-developer-email]
 verify_jwt = true
 
-[functions.verify-recaptcha]
-verify_jwt = false
-
 [functions.rate-limit-auth]
 verify_jwt = false

@@ -1,15 +1,14 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Code2, Shield } from "lucide-react";
+import { Code2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
-import ReCAPTCHA from "react-google-recaptcha";
 import { sanitizeText, isValidEmail, getRateLimitIdentifier } from "@/lib/sanitize";
 
 const passwordSchema = z.string()
@@ -18,8 +17,6 @@ const passwordSchema = z.string()
   .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
-
-const RECAPTCHA_SITE_KEY = "6LecdN4rAAAAAAusXVgeEx8ewmJeu75n3OYUbtK-";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,8 +27,6 @@ const Auth = () => {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
-  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,34 +44,6 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate reCAPTCHA
-      if (!recaptchaToken) {
-        toast({
-          title: "Security Check Required",
-          description: "Please complete the security verification.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
-      // Verify reCAPTCHA with backend
-      const { data: captchaData, error: captchaError } = await supabase.functions.invoke('verify-recaptcha', {
-        body: { token: recaptchaToken }
-      });
-
-      if (captchaError || !captchaData?.success) {
-        toast({
-          title: "Security Check Failed",
-          description: "Please try again or refresh the page.",
-          variant: "destructive",
-        });
-        recaptchaRef.current?.reset();
-        setRecaptchaToken(null);
-        setLoading(false);
-        return;
-      }
-
       // Check rate limiting
       const rateLimitId = getRateLimitIdentifier();
       const { data: rateLimitData, error: rateLimitError } = await supabase.functions.invoke('rate-limit-auth', {
@@ -179,10 +146,6 @@ const Auth = () => {
         });
       }
     } catch (error: any) {
-      // Reset reCAPTCHA on error
-      recaptchaRef.current?.reset();
-      setRecaptchaToken(null);
-      
       toast({
         title: "Error",
         description: error.message || "An error occurred. Please try again.",
@@ -321,21 +284,6 @@ const Auth = () => {
             </>
           )}
         </div>
-
-        {/* reCAPTCHA */}
-        <div className="flex flex-col items-center gap-2 pt-4">
-          <ReCAPTCHA
-            ref={recaptchaRef}
-            sitekey={RECAPTCHA_SITE_KEY}
-            onChange={(token) => setRecaptchaToken(token)}
-            onExpired={() => setRecaptchaToken(null)}
-            theme="dark"
-          />
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <Shield className="h-3 w-3" />
-            <span>Protected by reCAPTCHA</span>
-          </div>
-        </div>
       </CardContent>
 
           <CardFooter className="flex flex-col gap-4">
@@ -343,7 +291,7 @@ const Auth = () => {
               type="submit" 
               variant="hero" 
               className="w-full shadow-glow" 
-              disabled={loading || !recaptchaToken}
+              disabled={loading}
             >
               {loading ? (
                 <span className="flex items-center gap-2">

@@ -19,11 +19,7 @@ const passwordSchema = z.string()
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
 // Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
-// CAPTCHA is currently optional - replace with your own key to enable
-const RECAPTCHA_SITE_KEY = ""; // leave empty to disable
-const CAPTCHA_ENABLED = Boolean(
-  RECAPTCHA_SITE_KEY && RECAPTCHA_SITE_KEY !== "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV"
-);
+const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -53,6 +49,34 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate CAPTCHA
+      if (!captchaToken) {
+        toast({
+          title: "CAPTCHA Required",
+          description: "Please complete the CAPTCHA verification.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Verify CAPTCHA with backend
+      const { data: verificationResult, error: verificationError } = await supabase.functions.invoke('verify-recaptcha', {
+        body: { token: captchaToken }
+      });
+
+      if (verificationError || !verificationResult?.success) {
+        toast({
+          title: "Verification Failed",
+          description: "CAPTCHA verification failed. Please try again.",
+          variant: "destructive",
+        });
+        recaptchaRef.current?.reset();
+        setCaptchaToken(null);
+        setLoading(false);
+        return;
+      }
+
       // Validate terms acceptance for both login and signup
       if (!termsAccepted) {
         toast({
@@ -266,25 +290,19 @@ const Auth = () => {
                 </>
               )}
 
-              {/* CAPTCHA verification (optional - configure your own key to enable) */}
+              {/* CAPTCHA verification required */}
               <div className="flex flex-col items-center gap-2 pt-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                   <ShieldCheck className="h-4 w-4" />
-                  <span>Security verification (optional)</span>
+                  <span>Security verification required</span>
                 </div>
-                {CAPTCHA_ENABLED ? (
-                  <ReCAPTCHA
-                    ref={recaptchaRef}
-                    sitekey={RECAPTCHA_SITE_KEY}
-                    onChange={(token) => setCaptchaToken(token)}
-                    onExpired={() => setCaptchaToken(null)}
-                    theme="light"
-                  />
-                ) : (
-                  <div className="text-xs text-muted-foreground">
-                    CAPTCHA disabled. Add a valid site key to enable.
-                  </div>
-                )}
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                  theme="light"
+                />
               </div>
             </div>
           </CardContent>

@@ -19,6 +19,9 @@ const Landing = () => {
             <span className="text-xl font-bold">VibeDevConsole</span>
           </div>
           <div className="flex items-center gap-4">
+            <Link to="/store">
+              <Button variant="ghost">Store</Button>
+            </Link>
             <ThemeToggle />
             <Link to="/auth">
               <Button variant="ghost">Sign In</Button>

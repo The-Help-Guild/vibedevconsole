@@ -19,7 +19,7 @@ const passwordSchema = z.string()
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
 // Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
-const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // Test key - replace with your own
+const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV"; // Test key - replace with your own
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);

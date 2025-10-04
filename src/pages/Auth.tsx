@@ -19,7 +19,8 @@ const passwordSchema = z.string()
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
 // Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
-const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV"; // Test key - replace with your own
+// CAPTCHA is currently optional - replace with your own key to enable
+const RECAPTCHA_SITE_KEY = "6LcvYt4rAAAAAMIL1nIo3q5S31kihqUCWXUZnZGV";
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -49,17 +50,6 @@ const Auth = () => {
     setLoading(true);
 
     try {
-      // Validate CAPTCHA
-      if (!captchaToken) {
-        toast({
-          title: "CAPTCHA Required",
-          description: "Please complete the CAPTCHA verification.",
-          variant: "destructive",
-        });
-        setLoading(false);
-        return;
-      }
-
       // Validate terms acceptance for both login and signup
       if (!termsAccepted) {
         toast({
@@ -273,11 +263,11 @@ const Auth = () => {
                 </>
               )}
 
-              {/* CAPTCHA verification required for both login and signup */}
+              {/* CAPTCHA verification (optional - configure your own key to enable) */}
               <div className="flex flex-col items-center gap-2 pt-2">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
                   <ShieldCheck className="h-4 w-4" />
-                  <span>Security verification required</span>
+                  <span>Security verification (optional)</span>
                 </div>
                 <ReCAPTCHA
                   ref={recaptchaRef}

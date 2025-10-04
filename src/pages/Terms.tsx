@@ -188,8 +188,8 @@ const Terms = () => {
                 For questions about these Terms of Service, please contact us:
               </p>
               <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg border border-primary/20">
-                <p className="text-foreground font-medium">Email: legal@vibedevconsole.com</p>
-                <p className="text-foreground font-medium">Support: support@vibedevconsole.com</p>
+                <p className="text-foreground font-medium">Email: vibedeveloper@proton.me</p>
+                <p className="text-foreground font-medium">Support: vibedeveloper@proton.me</p>
               </div>
             </section>
           </div>

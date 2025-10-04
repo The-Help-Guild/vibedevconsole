@@ -99,7 +99,7 @@ const Privacy = () => {
                 <li><strong>Non-Discrimination:</strong> Not receive discriminatory treatment for exercising your rights</li>
               </ul>
               <p className="text-muted-foreground leading-relaxed mt-4">
-                To exercise these rights, please contact us at privacy@vibedevconsole.com
+                To exercise these rights, please contact us at vibedeveloper@proton.me
               </p>
             </section>
 
@@ -154,8 +154,8 @@ const Privacy = () => {
                 If you have any questions about this Privacy Policy or wish to exercise your rights, please contact us:
               </p>
               <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-lg border border-primary/20">
-                <p className="text-foreground font-medium">Email: privacy@vibedevconsole.com</p>
-                <p className="text-foreground font-medium">Data Protection Officer: dpo@vibedevconsole.com</p>
+                <p className="text-foreground font-medium">Email: vibedeveloper@proton.me</p>
+                <p className="text-foreground font-medium">Data Protection Officer: vibedeveloper@proton.me</p>
               </div>
             </section>
 

@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,38 +10,49 @@ import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Code2, ArrowLeft, ArrowRight, Check, Upload } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+
+interface FormData {
+  appName: string;
+  packageName: string;
+  shortDescription: string;
+  longDescription: string;
+  category: string;
+  versionName: string;
+  versionCode: number;
+}
 
 const SubmitApp = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
-  const [appName, setAppName] = useState("");
-  const [shortDescription, setShortDescription] = useState("");
-  const [longDescription, setLongDescription] = useState("");
-  const [category, setCategory] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  const [formData, setFormData] = useState<FormData>({
+    appName: "",
+    packageName: "",
+    shortDescription: "",
+    longDescription: "",
+    category: "",
+    versionName: "1.0.0",
+    versionCode: 1,
+  });
+  
   const [screenshots, setScreenshots] = useState<File[]>([]);
   const [apkFile, setApkFile] = useState<File | null>(null);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const { toast } = useToast();
-  const navigate = useNavigate();
 
   const handleNext = () => {
     if (step === 1) {
-      if (!appName || !shortDescription || !longDescription || !category) {
-        toast({
-          title: "Required fields missing",
-          description: "Please fill in all required fields.",
-          variant: "destructive",
-        });
+      if (!formData.appName || !formData.packageName || !formData.shortDescription || 
+          !formData.longDescription || !formData.category) {
+        toast.error("Please fill in all required fields");
         return;
       }
     }
     if (step === 2) {
       if (!apkFile) {
-        toast({
-          title: "APK file required",
-          description: "Please upload your APK file.",
-          variant: "destructive",
-        });
+        toast.error("Please upload your APK file");
         return;
       }
     }
@@ -50,34 +63,117 @@ const SubmitApp = () => {
     if (step > 1) setStep(step - 1);
   };
 
-  const handleSubmit = () => {
-    if (!agreedToTerms) {
-      toast({
-        title: "Agreement required",
-        description: "Please agree to the terms and conditions.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "App submitted!",
-      description: "Your app has been submitted for review.",
-    });
-    navigate("/dashboard");
-  };
-
   const handleScreenshotChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length + screenshots.length > 5) {
-      toast({
-        title: "Too many screenshots",
-        description: "You can upload a maximum of 5 screenshots.",
-        variant: "destructive",
-      });
+      toast.error("You can upload a maximum of 5 screenshots");
       return;
     }
     setScreenshots([...screenshots, ...files]);
+  };
+
+  const handleSubmit = async () => {
+    if (!agreedToTerms) {
+      toast.error("Please agree to the terms and conditions");
+      return;
+    }
+
+    if (!user) {
+      toast.error("You must be logged in to submit an app");
+      navigate("/auth");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Upload APK file
+      let apkPath = null;
+      if (apkFile) {
+        const apkFileName = `${user.id}/${Date.now()}_${apkFile.name}`;
+        const { error: apkError } = await supabase.storage
+          .from("apk-files")
+          .upload(apkFileName, apkFile);
+
+        if (apkError) throw apkError;
+        apkPath = apkFileName;
+      }
+
+      // Upload screenshots
+      const screenshotUrls: string[] = [];
+      for (const screenshot of screenshots) {
+        const fileName = `${user.id}/${Date.now()}_${screenshot.name}`;
+        const { error: uploadError } = await supabase.storage
+          .from("app-screenshots")
+          .upload(fileName, screenshot);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage
+          .from("app-screenshots")
+          .getPublicUrl(fileName);
+        
+        screenshotUrls.push(urlData.publicUrl);
+      }
+
+      // Create application record
+      const { data, error } = await supabase
+        .from("applications")
+        .insert({
+          app_name: formData.appName,
+          package_name: formData.packageName,
+          short_description: formData.shortDescription,
+          long_description: formData.longDescription,
+          category: formData.category,
+          version_name: formData.versionName,
+          version_code: formData.versionCode,
+          developer_id: user.id,
+          apk_file_path: apkPath,
+          screenshots: screenshotUrls,
+          status: "pending",
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Create submission history record
+      const { error: historyError } = await supabase
+        .from("submission_history")
+        .insert({
+          application_id: data.id,
+          version_code: formData.versionCode,
+          version_name: formData.versionName,
+          status: "pending",
+          submitted_by: user.id,
+          apk_file_path: apkPath,
+        });
+
+      if (historyError) throw historyError;
+
+      // Send submission confirmation email
+      try {
+        await supabase.functions.invoke("send-submission-confirmation", {
+          body: {
+            email: user.email,
+            appName: formData.appName,
+            versionName: formData.versionName,
+            submittedAt: new Date().toISOString(),
+          },
+        });
+      } catch (emailError) {
+        console.error("Failed to send confirmation email:", emailError);
+        // Don't fail the submission if email fails
+      }
+
+      toast.success("Application submitted successfully!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      console.error("Submission error:", error);
+      toast.error(error.message || "Failed to submit application");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -134,16 +230,26 @@ const SubmitApp = () => {
                 <Label htmlFor="appName">App Name *</Label>
                 <Input
                   id="appName"
-                  placeholder="My Awesome App"
-                  value={appName}
-                  onChange={(e) => setAppName(e.target.value)}
+                  value={formData.appName}
+                  onChange={(e) => setFormData({ ...formData, appName: e.target.value })}
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="packageName">Package Name *</Label>
+                <Input
+                  id="packageName"
+                  placeholder="com.example.app"
+                  value={formData.packageName}
+                  onChange={(e) => setFormData({ ...formData, packageName: e.target.value })}
                   required
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="category">Category *</Label>
-                <Select value={category} onValueChange={setCategory}>
+                <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
@@ -159,31 +265,51 @@ const SubmitApp = () => {
                 </Select>
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="versionName">Version Name *</Label>
+                  <Input
+                    id="versionName"
+                    value={formData.versionName}
+                    onChange={(e) => setFormData({ ...formData, versionName: e.target.value })}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="versionCode">Version Code *</Label>
+                  <Input
+                    id="versionCode"
+                    type="number"
+                    value={formData.versionCode}
+                    onChange={(e) => setFormData({ ...formData, versionCode: parseInt(e.target.value) })}
+                    required
+                  />
+                </div>
+              </div>
+
               <div className="space-y-2">
                 <Label htmlFor="shortDescription">Short Description * (Max 80 characters)</Label>
                 <Input
                   id="shortDescription"
-                  placeholder="A brief description of your app"
-                  value={shortDescription}
-                  onChange={(e) => setShortDescription(e.target.value)}
+                  value={formData.shortDescription}
+                  onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                   maxLength={80}
                   required
                 />
-                <p className="text-xs text-muted-foreground">{shortDescription.length}/80</p>
+                <p className="text-xs text-muted-foreground">{formData.shortDescription.length}/80</p>
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="longDescription">Long Description * (Max 4000 characters)</Label>
                 <Textarea
                   id="longDescription"
-                  placeholder="Detailed description of your app's features and functionality"
-                  value={longDescription}
-                  onChange={(e) => setLongDescription(e.target.value)}
+                  value={formData.longDescription}
+                  onChange={(e) => setFormData({ ...formData, longDescription: e.target.value })}
                   rows={6}
                   maxLength={4000}
                   required
                 />
-                <p className="text-xs text-muted-foreground">{longDescription.length}/4000</p>
+                <p className="text-xs text-muted-foreground">{formData.longDescription.length}/4000</p>
               </div>
 
               <div className="space-y-2">
@@ -234,7 +360,13 @@ const SubmitApp = () => {
                         accept=".apk,.aab"
                         onChange={(e) => {
                           const file = e.target.files?.[0];
-                          if (file) setApkFile(file);
+                          if (file) {
+                            if (file.size > 500 * 1024 * 1024) {
+                              toast.error("File size must be less than 500MB");
+                              return;
+                            }
+                            setApkFile(file);
+                          }
                         }}
                         className="max-w-xs"
                       />
@@ -247,7 +379,7 @@ const SubmitApp = () => {
                 <h3 className="font-semibold mb-2">Requirements</h3>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• File format: .apk or .aab</li>
-                  <li>• Maximum file size: 100 MB</li>
+                  <li>• Maximum file size: 500 MB</li>
                   <li>• Must be signed with your keystore</li>
                 </ul>
               </div>
@@ -265,15 +397,23 @@ const SubmitApp = () => {
               <div className="space-y-4 border-t pt-4">
                 <div>
                   <p className="text-sm font-semibold text-muted-foreground">App Name</p>
-                  <p className="text-lg">{appName}</p>
+                  <p className="text-lg">{formData.appName}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">Package Name</p>
+                  <p className="text-lg">{formData.packageName}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-muted-foreground">Category</p>
-                  <p className="text-lg capitalize">{category}</p>
+                  <p className="text-lg capitalize">{formData.category}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-muted-foreground">Version</p>
+                  <p className="text-lg">{formData.versionName} ({formData.versionCode})</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-muted-foreground">Short Description</p>
-                  <p>{shortDescription}</p>
+                  <p>{formData.shortDescription}</p>
                 </div>
                 <div>
                   <p className="text-sm font-semibold text-muted-foreground">APK File</p>
@@ -297,9 +437,7 @@ const SubmitApp = () => {
                     <Link to="/terms" className="text-primary hover:underline" target="_blank">
                       Terms of Service
                     </Link>
-                    , does not contain malicious code, and I have the right to distribute this application. I
-                    understand that this submission may be reviewed and could be rejected if it violates our
-                    policies.
+                    , does not contain malicious code, and I have the right to distribute this application.
                   </label>
                 </div>
               </div>
@@ -308,18 +446,18 @@ const SubmitApp = () => {
 
           {/* Navigation Buttons */}
           <div className="flex justify-between mt-8 pt-6 border-t">
-            <Button variant="outline" onClick={handleBack} disabled={step === 1}>
+            <Button variant="outline" onClick={handleBack} disabled={step === 1 || loading}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back
             </Button>
             {step < 3 ? (
-              <Button variant="hero" onClick={handleNext}>
+              <Button onClick={handleNext} disabled={loading}>
                 Next
                 <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
             ) : (
-              <Button variant="hero" onClick={handleSubmit}>
-                Submit App
+              <Button onClick={handleSubmit} disabled={loading}>
+                {loading ? "Submitting..." : "Submit App"}
                 <Check className="h-4 w-4 ml-2" />
               </Button>
             )}

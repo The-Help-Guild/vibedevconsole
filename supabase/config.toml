@@ -1,1 +1,7 @@
 project_id = "xsgdymdyvqtfqqdkibed"
+
+[functions.send-submission-confirmation]
+verify_jwt = false
+
+[functions.send-status-update]
+verify_jwt = false

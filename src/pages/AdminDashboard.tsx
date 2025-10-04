@@ -124,6 +124,39 @@ export default function AdminDashboard() {
 
       if (historyError) throw historyError;
 
+      // Get developer email for notification
+      const app = pendingApps.find(a => a.id === appId);
+      if (app) {
+        const { data: devProfile } = await supabase
+          .from("developer_profiles")
+          .select("user_id")
+          .eq("user_id", app.developer_id)
+          .single();
+
+        if (devProfile) {
+          // Get user email from auth
+          const { data: { user: developerUser } } = await supabase.auth.admin.getUserById(app.developer_id);
+          
+          if (developerUser?.email) {
+            // Send status update email
+            try {
+              await supabase.functions.invoke("send-status-update", {
+                body: {
+                  email: developerUser.email,
+                  appName: app.app_name,
+                  status: newStatus,
+                  reviewNotes: reviewNotes || undefined,
+                  reviewedAt: new Date().toISOString(),
+                },
+              });
+            } catch (emailError) {
+              console.error("Failed to send status update email:", emailError);
+              // Don't fail the review if email fails
+            }
+          }
+        }
+      }
+
       toast.success(`Application ${newStatus === "published" ? "approved" : "rejected"}`);
       setSelectedApp(null);
       setReviewNotes("");

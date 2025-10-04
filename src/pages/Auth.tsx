@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Code2 } from "lucide-react";
+import { Code2, ShieldCheck } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
+import ReCAPTCHA from "react-google-recaptcha";
 
 const passwordSchema = z.string()
   .min(8, "Password must be at least 8 characters")
@@ -17,14 +18,20 @@ const passwordSchema = z.string()
   .regex(/[0-9]/, "Password must contain at least one number")
   .regex(/[^a-zA-Z0-9]/, "Password must contain at least one special character");
 
+// Google reCAPTCHA v2 site key - Get yours at https://www.google.com/recaptcha/admin
+const RECAPTCHA_SITE_KEY = "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"; // Test key - replace with your own
+
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [gdprConsent, setGdprConsent] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const recaptchaRef = useRef<ReCAPTCHA>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -42,6 +49,28 @@ const Auth = () => {
     setLoading(true);
 
     try {
+      // Validate CAPTCHA
+      if (!captchaToken) {
+        toast({
+          title: "CAPTCHA Required",
+          description: "Please complete the CAPTCHA verification.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Validate terms acceptance for both login and signup
+      if (!termsAccepted) {
+        toast({
+          title: "Terms Required",
+          description: "You must accept the Terms of Service and Privacy Policy to continue.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
       if (isLogin) {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -98,12 +127,19 @@ const Auth = () => {
           description: "Please check your email to verify your account.",
         });
       }
+
+      // Reset CAPTCHA after successful submission
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message || "An error occurred. Please try again.",
         variant: "destructive",
       });
+      // Reset CAPTCHA on error
+      recaptchaRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
       setLoading(false);
     }
@@ -177,39 +213,71 @@ const Auth = () => {
               )}
             </div>
 
-            {!isLogin && (
-              <div className="space-y-4 pt-4 border-t">
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="gdpr"
-                    checked={gdprConsent}
-                    onCheckedChange={(checked) => setGdprConsent(checked === true)}
-                  />
-                  <label htmlFor="gdpr" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I agree to the processing of my personal data in accordance with the{" "}
-                    <Link to="/privacy" className="text-primary hover:underline">
-                      Privacy Policy
-                    </Link>{" "}
-                    and{" "}
-                    <Link to="/terms" className="text-primary hover:underline">
-                      Terms of Service
-                    </Link>
-                    . <span className="text-destructive">*</span>
-                  </label>
-                </div>
-
-                <div className="flex items-start space-x-2">
-                  <Checkbox
-                    id="marketing"
-                    checked={marketingConsent}
-                    onCheckedChange={(checked) => setMarketingConsent(checked === true)}
-                  />
-                  <label htmlFor="marketing" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    I would like to receive product updates and marketing communications (optional)
-                  </label>
-                </div>
+            <div className="space-y-4 pt-4 border-t">
+              {/* Terms acceptance required for both login and signup */}
+              <div className="flex items-start space-x-2">
+                <Checkbox
+                  id="terms"
+                  checked={termsAccepted}
+                  onCheckedChange={(checked) => setTermsAccepted(checked === true)}
+                  required
+                />
+                <label htmlFor="terms" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                  I accept the{" "}
+                  <Link to="/terms" target="_blank" className="text-primary hover:underline font-medium">
+                    Terms of Service
+                  </Link>{" "}
+                  and{" "}
+                  <Link to="/privacy" target="_blank" className="text-primary hover:underline font-medium">
+                    Privacy Policy
+                  </Link>
+                  . <span className="text-destructive">*</span>
+                </label>
               </div>
-            )}
+
+              {!isLogin && (
+                <>
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="gdpr"
+                      checked={gdprConsent}
+                      onCheckedChange={(checked) => setGdprConsent(checked === true)}
+                      required
+                    />
+                    <label htmlFor="gdpr" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I agree to the processing of my personal data in accordance with GDPR regulations.
+                      <span className="text-destructive"> *</span>
+                    </label>
+                  </div>
+
+                  <div className="flex items-start space-x-2">
+                    <Checkbox
+                      id="marketing"
+                      checked={marketingConsent}
+                      onCheckedChange={(checked) => setMarketingConsent(checked === true)}
+                    />
+                    <label htmlFor="marketing" className="text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                      I would like to receive product updates and marketing communications (optional)
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* CAPTCHA verification required for both login and signup */}
+              <div className="flex flex-col items-center gap-2 pt-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
+                  <ShieldCheck className="h-4 w-4" />
+                  <span>Security verification required</span>
+                </div>
+                <ReCAPTCHA
+                  ref={recaptchaRef}
+                  sitekey={RECAPTCHA_SITE_KEY}
+                  onChange={(token) => setCaptchaToken(token)}
+                  onExpired={() => setCaptchaToken(null)}
+                  theme="light"
+                />
+              </div>
+            </div>
           </CardContent>
 
           <CardFooter className="flex flex-col gap-4">
@@ -226,7 +294,14 @@ const Auth = () => {
 
             <button
               type="button"
-              onClick={() => setIsLogin(!isLogin)}
+              onClick={() => {
+                setIsLogin(!isLogin);
+                // Reset form state when switching
+                setTermsAccepted(false);
+                setGdprConsent(false);
+                setCaptchaToken(null);
+                recaptchaRef.current?.reset();
+              }}
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}

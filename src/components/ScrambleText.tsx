@@ -2,7 +2,6 @@ import { useEffect, useState, useRef } from "react";
 
 interface ScrambleTextProps {
   text: string;
-  className?: string;
   scrambleDuration?: number;
   scrambleSpeed?: number;
 }
@@ -11,7 +10,6 @@ const CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
 
 export const ScrambleText = ({ 
   text, 
-  className = "",
   scrambleDuration = 2000,
   scrambleSpeed = 50
 }: ScrambleTextProps) => {
@@ -66,17 +64,9 @@ export const ScrambleText = ({
   }, [text, scrambleDuration, scrambleSpeed]);
 
   return (
-    <span 
-      className={className}
-      style={{
-        letterSpacing: '0.02em',
-      }}
-    >
+    <span className="inline-block">
       {displayText.map((char, index) => (
-        <span
-          key={index}
-          className="inline-block"
-        >
+        <span key={index} className="inline-block">
           {char}
         </span>
       ))}

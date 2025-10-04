@@ -82,10 +82,19 @@ export default function Store() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg">
+          <p className="text-sm font-semibold text-primary mb-1">
+            🌟 Free Open-Source Apps
+          </p>
+          <p className="text-xs text-muted-foreground">
+            All apps on this platform are free and open-source, created by developers sharing their work with the community
+          </p>
+        </div>
+        
         <div className="mb-8">
           <h2 className="text-4xl font-bold mb-2">App Store</h2>
           <p className="text-muted-foreground">
-            Browse and download published applications
+            Browse and download free open-source Android applications
           </p>
         </div>
 

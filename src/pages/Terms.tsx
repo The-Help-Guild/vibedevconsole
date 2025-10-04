@@ -24,7 +24,16 @@ const Terms = () => {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <Card className="p-8 shadow-elegant">
           <h1 className="text-4xl font-bold mb-6">Terms of Service</h1>
-          <p className="text-sm text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-sm text-muted-foreground mb-4">Last updated: {new Date().toLocaleDateString()}</p>
+          
+          <div className="mb-8 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm font-semibold text-primary mb-2">
+              🎉 Free for Open-Source Projects
+            </p>
+            <p className="text-xs text-muted-foreground">
+              VibeDevConsole is a <strong>completely free platform</strong> exclusively for developers who share their Android applications as <strong>open-source projects</strong>. We exist to support and sustain the open-source ecosystem, helping freelance developers—from beginners to experienced professionals—share their work and knowledge with the community at no cost.
+            </p>
+          </div>
 
           <div className="prose prose-slate max-w-none space-y-6">
             <section>
@@ -59,6 +68,16 @@ const Terms = () => {
 
             <section>
               <h2 className="text-2xl font-bold mb-4">4. Application Submission Requirements</h2>
+              
+              <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg">
+                <p className="text-sm font-semibold text-primary mb-2">
+                  Open-Source Requirement
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  All applications submitted to VibeDevConsole <strong>must be open-source and freely available</strong>. By submitting your application, you confirm that you are sharing your work with the community and that your project is available under an open-source license. This platform is dedicated to supporting developers who contribute to the open-source ecosystem and share knowledge freely.
+                </p>
+              </div>
+              
               <h3 className="text-xl font-semibold mb-3">Content Standards</h3>
               <p className="text-muted-foreground leading-relaxed mb-4">All submitted applications must:</p>
               <ul className="list-disc pl-6 space-y-2 text-muted-foreground">

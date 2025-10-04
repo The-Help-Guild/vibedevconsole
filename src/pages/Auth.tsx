@@ -164,8 +164,18 @@ const Auth = () => {
             {isLogin ? "Welcome Back" : "Create Account"}
           </CardTitle>
           <CardDescription>
-            {isLogin ? "Sign in to access your developer dashboard" : "Start publishing your Android apps today"}
+            {isLogin ? "Sign in to access your developer dashboard" : "Start publishing your free open-source Android apps today"}
           </CardDescription>
+          {!isLogin && (
+            <div className="mt-3 px-3 py-2 bg-primary/10 border border-primary/20 rounded-md">
+              <p className="text-xs text-primary font-medium">
+                100% Free for Open-Source Projects
+              </p>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Join developers worldwide sharing their knowledge freely
+              </p>
+            </div>
+          )}
         </CardHeader>
 
         <form onSubmit={handleSubmit}>

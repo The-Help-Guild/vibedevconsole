@@ -234,9 +234,18 @@ const SubmitApp = () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8 max-w-3xl">
+        <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg">
+          <p className="text-sm font-semibold text-primary mb-1">
+            📱 Free Open-Source Platform
+          </p>
+          <p className="text-xs text-muted-foreground">
+            This platform is completely free for developers sharing their Android apps as open-source projects. By submitting here, you're contributing to the open-source community and helping other developers learn and grow.
+          </p>
+        </div>
+        
         <div className="mb-8">
           <h1 className="text-4xl font-bold mb-2">Submit New App</h1>
-          <p className="text-muted-foreground">Complete the following steps to publish your app</p>
+          <p className="text-muted-foreground">Complete the following steps to publish your free open-source app</p>
         </div>
 
         {/* Progress Steps */}

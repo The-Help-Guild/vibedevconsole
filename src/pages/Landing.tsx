@@ -39,8 +39,16 @@ const Landing = () => {
           <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-clip-text text-transparent gradient-hero">
             Publish Your Android Apps
           </h1>
+          <div className="mb-6 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg max-w-2xl mx-auto">
+            <p className="text-base md:text-lg font-semibold text-primary">
+              🎉 100% Free for Open-Source Projects
+            </p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Supporting freelance developers, beginners and experts, sharing knowledge freely
+            </p>
+          </div>
           <p className="text-xl md:text-2xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            A streamlined platform for developers to submit, manage, and distribute Android applications with minimal friction and maximum compliance.
+            A free, streamlined platform dedicated to open-source developers who share their work and knowledge with the community.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link to="/auth">
@@ -73,10 +81,10 @@ const Landing = () => {
                       What is VibeDevConsole?
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
-                      VibeDevConsole is a modern, developer-friendly platform designed to simplify the entire Android application publishing process. We provide a secure, compliant, and efficient environment where developers can submit, manage, and distribute their Android applications without the complexity and bureaucracy of traditional app stores.
+                      VibeDevConsole is a <strong className="text-primary">100% free platform</strong> exclusively for <strong className="text-primary">open-source Android applications</strong>. We're dedicated to supporting and sustaining the open-source ecosystem by providing freelance developers—from beginners to experienced professionals—a place to share their work and knowledge with the community at no cost.
                     </p>
                     <p className="text-muted-foreground leading-relaxed">
-                      Built with cutting-edge technology and security best practices, our platform ensures your apps and user data are protected while offering a seamless experience from submission to publication.
+                      Built with cutting-edge technology and security best practices, our platform ensures your apps and user data are protected while offering a seamless experience from submission to publication. By keeping everything free for open-source projects, we help nurture innovation and knowledge sharing in the developer community.
                     </p>
                   </div>
 
@@ -86,23 +94,30 @@ const Landing = () => {
                       <Users className="h-5 w-5 text-accent" />
                       Who is it for?
                     </h3>
+                    <div className="space-y-3 mb-4">
+                      <Card className="p-4 bg-primary/5 border-primary/30">
+                        <p className="text-sm font-medium text-primary">
+                          ✨ This platform is <strong>completely free</strong> for developers who share their Android apps as <strong>open-source projects</strong>. We believe in supporting the open-source community and helping developers—regardless of experience level—share their work and knowledge freely.
+                        </p>
+                      </Card>
+                    </div>
                     <div className="grid gap-3">
                       <Card className="p-4 border-primary/20">
-                        <h4 className="font-medium mb-2">Independent Developers</h4>
+                        <h4 className="font-medium mb-2">Freelance Developers</h4>
                         <p className="text-sm text-muted-foreground">
-                          Solo developers looking for a hassle-free way to publish their apps without dealing with complex submission processes.
+                          Independent developers building and sharing open-source Android apps, contributing to the community while learning and growing.
                         </p>
                       </Card>
                       <Card className="p-4 border-primary/20">
-                        <h4 className="font-medium mb-2">Small Development Teams</h4>
+                        <h4 className="font-medium mb-2">Beginners & Students</h4>
                         <p className="text-sm text-muted-foreground">
-                          Startups and small teams that need a fast, reliable platform to get their Android applications to market quickly.
+                          New developers looking to showcase their first projects and learn from the community by sharing their open-source work.
                         </p>
                       </Card>
                       <Card className="p-4 border-primary/20">
-                        <h4 className="font-medium mb-2">Enterprise Developers</h4>
+                        <h4 className="font-medium mb-2">Experienced Developers</h4>
                         <p className="text-sm text-muted-foreground">
-                          Companies requiring GDPR-compliant, secure distribution channels for internal or customer-facing Android applications.
+                          Seasoned developers giving back to the community by open-sourcing their applications and sharing knowledge with others.
                         </p>
                       </Card>
                     </div>
@@ -282,8 +297,11 @@ const Landing = () => {
                 <Code2 className="h-6 w-6 text-primary" />
                 <span className="font-bold">VibeDevConsole</span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                The streamlined Android app publishing platform for modern developers.
+              <p className="text-sm text-muted-foreground mb-2">
+                Free Android app publishing for open-source developers.
+              </p>
+              <p className="text-xs text-primary">
+                Supporting the open-source community and freelance developers worldwide.
               </p>
             </div>
             <div>

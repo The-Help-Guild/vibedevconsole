@@ -24,7 +24,16 @@ const Privacy = () => {
       <main className="container mx-auto px-4 py-12 max-w-4xl">
         <Card className="p-8 shadow-elegant">
           <h1 className="text-4xl font-bold mb-6">Privacy Policy</h1>
-          <p className="text-sm text-muted-foreground mb-8">Last updated: {new Date().toLocaleDateString()}</p>
+          <p className="text-sm text-muted-foreground mb-4">Last updated: {new Date().toLocaleDateString()}</p>
+          
+          <div className="mb-8 px-4 py-3 bg-primary/10 border border-primary/20 rounded-lg">
+            <p className="text-sm font-semibold text-primary mb-2">
+              🌟 Supporting the Open-Source Community
+            </p>
+            <p className="text-xs text-muted-foreground">
+              VibeDevConsole is a <strong>free platform</strong> dedicated to <strong>open-source Android applications</strong>. We're committed to supporting freelance developers of all experience levels who share their work and knowledge with the community. Our privacy practices reflect our commitment to transparency and protecting the developers who contribute to the open-source ecosystem.
+            </p>
+          </div>
 
           <div className="prose prose-slate max-w-none space-y-6">
             <section>

@@ -130,11 +130,16 @@ const Dashboard = () => {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
-        <div className="mb-8 animate-fade-in">
+        <div className="mb-6 animate-fade-in">
           <h1 className="text-4xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
             Welcome back!
           </h1>
-          <p className="text-muted-foreground">Manage your Android applications and submissions</p>
+          <p className="text-muted-foreground mb-3">Manage your open-source Android applications and submissions</p>
+          <div className="px-4 py-2 bg-primary/10 border border-primary/20 rounded-lg inline-block">
+            <p className="text-xs text-primary font-medium">
+              🎉 This platform is free for open-source developers sharing their knowledge with the community
+            </p>
+          </div>
         </div>
 
         {/* Quick Stats */}

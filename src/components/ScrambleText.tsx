@@ -15,7 +15,12 @@ export const ScrambleText = ({
   scrambleDuration = 2000,
   scrambleSpeed = 50
 }: ScrambleTextProps) => {
-  const [displayText, setDisplayText] = useState(text.split("").map(() => " "));
+  // Start with random characters instead of spaces
+  const [displayText, setDisplayText] = useState(
+    text.split("").map((char) => 
+      char === " " ? " " : CHARACTERS[Math.floor(Math.random() * CHARACTERS.length)]
+    )
+  );
   const [isComplete, setIsComplete] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout>();
   const timeoutRef = useRef<NodeJS.Timeout>();
@@ -62,19 +67,15 @@ export const ScrambleText = ({
 
   return (
     <span 
-      className={`${className} ${!isComplete ? 'animate-pulse' : ''}`}
+      className={className}
       style={{
-        fontFamily: 'monospace',
-        letterSpacing: '0.05em',
+        letterSpacing: '0.02em',
       }}
     >
       {displayText.map((char, index) => (
         <span
           key={index}
-          className="inline-block transition-all duration-100"
-          style={{
-            animationDelay: `${index * 50}ms`,
-          }}
+          className="inline-block"
         >
           {char}
         </span>

@@ -134,25 +134,28 @@ export default function AdminDashboard() {
           .single();
 
         if (devProfile) {
-          // Get user email from auth
-          const { data: { user: developerUser } } = await supabase.auth.admin.getUserById(app.developer_id);
-          
-          if (developerUser?.email) {
-            // Send status update email
-            try {
+          // Get user email securely via edge function
+          try {
+            const { data: emailData, error: emailError } = await supabase.functions.invoke(
+              "get-developer-email",
+              { body: { userId: app.developer_id } }
+            );
+            
+            if (!emailError && emailData?.email) {
+              // Send status update email
               await supabase.functions.invoke("send-status-update", {
                 body: {
-                  email: developerUser.email,
+                  email: emailData.email,
                   appName: app.app_name,
                   status: newStatus,
                   reviewNotes: reviewNotes || undefined,
                   reviewedAt: new Date().toISOString(),
                 },
               });
-            } catch (emailError) {
-              console.error("Failed to send status update email:", emailError);
-              // Don't fail the review if email fails
             }
+          } catch (emailError) {
+            console.error("Failed to send status update email:", emailError);
+            // Don't fail the review if email fails
           }
         }
       }

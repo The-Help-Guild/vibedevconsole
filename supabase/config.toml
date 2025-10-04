@@ -1,7 +1,10 @@
 project_id = "xsgdymdyvqtfqqdkibed"
 
 [functions.send-submission-confirmation]
-verify_jwt = false
+verify_jwt = true
 
 [functions.send-status-update]
-verify_jwt = false
+verify_jwt = true
+
+[functions.get-developer-email]
+verify_jwt = true

@@ -48,11 +48,19 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (!roleLoading && !isAdmin && user) {
-      // Attempt one-time admin bootstrap if no admins exist
       (async () => {
         try {
-          const { data, error } = await supabase.functions.invoke("grant-admin", {});
-          if (!error && data?.granted) {
+          // Double-check role directly to avoid race conditions
+          const { data: directRoles } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", user.id);
+          const hasAdmin = (directRoles || []).some((r: any) => r.role === "admin");
+          if (hasAdmin) return; // allow access
+
+          // Attempt one-time admin bootstrap if no admins exist
+          const { data: grantData, error: grantError } = await supabase.functions.invoke("grant-admin", {});
+          if (!grantError && grantData?.granted) {
             toast.success("Admin privileges granted. Reloading...");
             window.location.reload();
             return;

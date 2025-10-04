@@ -23,10 +23,12 @@ export function useUserRole() {
         .eq("user_id", user.id);
 
       if (error) {
-        console.error("Error fetching roles:", error);
+        console.error("Error fetching roles:", error, "for user", user.id);
         setRoles([]);
       } else {
-        setRoles(data?.map((r) => r.role as UserRole) || []);
+        const mapped = data?.map((r) => r.role as UserRole) || [];
+        console.log("Fetched roles for user", user.id, mapped);
+        setRoles(mapped);
       }
       setLoading(false);
     };

@@ -27,7 +27,14 @@ interface PendingApp {
 interface DeveloperProfile {
   user_id: string;
   company_name: string | null;
+  phone_number: string | null;
+  address: string | null;
+  website_url: string | null;
   created_at: string;
+}
+
+interface DeveloperWithEmail extends DeveloperProfile {
+  email?: string;
 }
 
 export default function AdminDashboard() {
@@ -35,10 +42,11 @@ export default function AdminDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin, loading: roleLoading } = useUserRole();
   const [pendingApps, setPendingApps] = useState<PendingApp[]>([]);
-  const [developers, setDevelopers] = useState<DeveloperProfile[]>([]);
+  const [developers, setDevelopers] = useState<DeveloperWithEmail[]>([]);
   const [selectedApp, setSelectedApp] = useState<string | null>(null);
   const [reviewNotes, setReviewNotes] = useState("");
   const [loading, setLoading] = useState(true);
+  const [expandedDev, setExpandedDev] = useState<string | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -96,7 +104,7 @@ export default function AdminDashboard() {
       setPendingApps(apps || []);
     }
 
-    // Fetch developers
+    // Fetch developers (without emails initially)
     const { data: devs, error: devsError } = await supabase
       .from("developer_profiles")
       .select("*")
@@ -109,6 +117,48 @@ export default function AdminDashboard() {
     }
 
     setLoading(false);
+  };
+
+  const logAuditAction = async (action: string, targetUserId: string, metadata?: any) => {
+    try {
+      await supabase.from("admin_audit_log").insert({
+        admin_id: user?.id,
+        action,
+        target_user_id: targetUserId,
+        metadata: metadata || {},
+      });
+    } catch (error) {
+      console.error("Failed to log audit action:", error);
+    }
+  };
+
+  const fetchDeveloperEmail = async (devUserId: string) => {
+    try {
+      const { data: emailData } = await supabase.functions.invoke("get-developer-email", {
+        body: { userId: devUserId },
+      });
+      
+      if (emailData?.email) {
+        // Log PII access
+        await logAuditAction("view_developer_email", devUserId);
+        
+        setDevelopers(prev => 
+          prev.map(d => d.user_id === devUserId ? { ...d, email: emailData.email } : d)
+        );
+      }
+    } catch (error) {
+      console.error("Failed to fetch email:", error);
+    }
+  };
+
+  const maskPII = (value: string | null, type: "phone" | "address" | "email") => {
+    if (!value) return "Not provided";
+    if (type === "phone") return `***-***-${value.slice(-4)}`;
+    if (type === "email") {
+      const [local, domain] = value.split("@");
+      return `${local.slice(0, 2)}***@${domain}`;
+    }
+    return `${value.slice(0, 10)}...`;
   };
 
   const handleReview = async (appId: string, newStatus: "published" | "rejected") => {
@@ -349,19 +399,60 @@ export default function AdminDashboard() {
               <Card>
                 <CardHeader>
                   <CardTitle>Registered Developers</CardTitle>
-                  <CardDescription>Manage developer accounts</CardDescription>
+                  <CardDescription>Manage developer accounts (PII access is logged)</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-2">
                     {developers.map((dev) => (
-                      <div key={dev.user_id} className="flex justify-between items-center p-3 border rounded-lg">
-                        <div>
-                          <p className="font-medium">{dev.company_name || "Individual Developer"}</p>
-                          <p className="text-sm text-muted-foreground">
-                            Joined: {new Date(dev.created_at).toLocaleDateString()}
-                          </p>
+                      <div key={dev.user_id} className="border rounded-lg">
+                        <div 
+                          className="flex justify-between items-center p-3 cursor-pointer hover:bg-accent/5"
+                          onClick={() => {
+                            const newExpanded = expandedDev === dev.user_id ? null : dev.user_id;
+                            setExpandedDev(newExpanded);
+                            if (newExpanded && !dev.email) {
+                              fetchDeveloperEmail(dev.user_id);
+                            }
+                          }}
+                        >
+                          <div>
+                            <p className="font-medium">{dev.company_name || "Individual Developer"}</p>
+                            <p className="text-sm text-muted-foreground">
+                              Joined: {new Date(dev.created_at).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline">Active</Badge>
+                            <Button variant="ghost" size="sm">
+                              {expandedDev === dev.user_id ? "Hide" : "View"} Details
+                            </Button>
+                          </div>
                         </div>
-                        <Badge variant="outline">Active</Badge>
+                        {expandedDev === dev.user_id && (
+                          <div className="p-4 border-t bg-muted/30 space-y-2 text-sm">
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Email:</span>
+                              <span className="font-mono">
+                                {dev.email ? maskPII(dev.email, "email") : "Loading..."}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Phone:</span>
+                              <span className="font-mono">{maskPII(dev.phone_number, "phone")}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Address:</span>
+                              <span className="font-mono">{maskPII(dev.address, "address")}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="text-muted-foreground">Website:</span>
+                              <span className="font-mono">{dev.website_url || "Not provided"}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground pt-2 italic">
+                              ⚠️ PII access logged for security audit
+                            </p>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

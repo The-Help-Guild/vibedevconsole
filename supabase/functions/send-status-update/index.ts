@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import { Resend } from "https://esm.sh/resend@4.0.0";
+import { validateStatusUpdate } from "./validation.ts";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
@@ -72,6 +73,15 @@ const handler = async (req: Request): Promise<Response> => {
       );
     }
     const { email, appName, status, reviewNotes, reviewedAt }: StatusUpdateEmailRequest = await req.json();
+
+    // Validate input
+    const validationError = validateStatusUpdate({ email, appName, status, reviewNotes, reviewedAt });
+    if (validationError) {
+      return new Response(
+        JSON.stringify({ error: validationError }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     console.log(`Sending ${status} notification to:`, email);
 

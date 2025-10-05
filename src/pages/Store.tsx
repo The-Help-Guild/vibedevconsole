@@ -9,6 +9,7 @@ import { SecureFileDownload } from "@/components/SecureFileDownload";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileMenu } from "@/components/MobileMenu";
 
 type Application = {
   id: string;
@@ -80,7 +81,11 @@ export default function Store() {
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            {!isMobile && <Button size="sm" onClick={() => navigate("/auth")}>Sign In</Button>}
+            {isMobile ? (
+              <MobileMenu />
+            ) : (
+              <Button size="sm" onClick={() => navigate("/auth")}>Sign In</Button>
+            )}
           </div>
         </div>
       </header>

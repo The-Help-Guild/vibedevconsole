@@ -7,6 +7,7 @@ import { Code2, Shield, Zap, Users, Upload, Globe, CheckCircle, Info } from "luc
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ScrambleText } from "@/components/ScrambleText";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileMenu } from "@/components/MobileMenu";
 
 const Landing = () => {
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
@@ -22,20 +23,25 @@ const Landing = () => {
             <span className="text-base md:text-xl font-bold">VibeDevConsole</span>
           </div>
           <div className="flex items-center gap-2 md:gap-4">
-            {!isMobile && (
-              <Link to="/store">
-                <Button variant="ghost" size="sm">Store</Button>
-              </Link>
+            {isMobile ? (
+              <>
+                <ThemeToggle />
+                <MobileMenu />
+              </>
+            ) : (
+              <>
+                <Link to="/store">
+                  <Button variant="ghost" size="sm">Store</Button>
+                </Link>
+                <ThemeToggle />
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm">Sign In</Button>
+                </Link>
+                <Link to="/auth">
+                  <Button variant="hero">Get Started</Button>
+                </Link>
+              </>
             )}
-            <ThemeToggle />
-            {!isMobile && (
-              <Link to="/auth">
-                <Button variant="ghost" size="sm">Sign In</Button>
-              </Link>
-            )}
-            <Link to="/auth">
-              <Button variant="hero" size={isMobile ? "sm" : "default"}>Get Started</Button>
-            </Link>
           </div>
         </div>
       </nav>

@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { SecureFileDownload } from "@/components/SecureFileDownload";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 type Application = {
   id: string;
@@ -30,6 +31,7 @@ export default function Store() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     fetchPublishedApps();
@@ -60,23 +62,25 @@ export default function Store() {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <h1 className="text-2xl font-bold cursor-pointer" onClick={() => navigate("/")}>
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-2 md:gap-6">
+            <h1 className="text-lg md:text-2xl font-bold cursor-pointer" onClick={() => navigate("/")}>
               VibeDevConsole
             </h1>
-            <nav className="flex gap-4">
-              <Button variant="ghost" onClick={() => navigate("/")}>
-                Home
-              </Button>
-              <Button variant="ghost" onClick={() => navigate("/store")}>
-                Store
-              </Button>
-            </nav>
+            {!isMobile && (
+              <nav className="flex gap-2">
+                <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
+                  Home
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => navigate("/store")}>
+                  Store
+                </Button>
+              </nav>
+            )}
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button onClick={() => navigate("/auth")}>Sign In</Button>
+            {!isMobile && <Button size="sm" onClick={() => navigate("/auth")}>Sign In</Button>}
           </div>
         </div>
       </header>
@@ -154,10 +158,10 @@ export default function Store() {
                     </div>
                   </div>
                 </CardContent>
-                <CardFooter className="flex gap-2">
+                <CardFooter className="flex flex-col sm:flex-row gap-2">
                   <Button
                     variant="outline"
-                    className="flex-1"
+                    className="w-full sm:flex-1"
                     onClick={() => navigate(`/app/${app.id}`)}
                   >
                     Details
@@ -168,7 +172,7 @@ export default function Store() {
                       filePath={app.apk_file_path}
                       fileName={`${app.package_name}_v${app.version_name}.apk`}
                       applicationId={app.id}
-                      className="flex-1"
+                      className="w-full sm:flex-1"
                     />
                   )}
                 </CardFooter>

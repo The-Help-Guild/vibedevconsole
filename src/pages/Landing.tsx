@@ -6,38 +6,44 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Code2, Shield, Zap, Users, Upload, Globe, CheckCircle, Info } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { ScrambleText } from "@/components/ScrambleText";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Landing = () => {
   const [learnMoreOpen, setLearnMoreOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
     <div className="min-h-screen">
       {/* Navigation */}
       <nav className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Code2 className="h-8 w-8 text-primary" />
-            <span className="text-xl font-bold">VibeDevConsole</span>
+            <Code2 className="h-6 md:h-8 w-6 md:w-8 text-primary" />
+            <span className="text-base md:text-xl font-bold">VibeDevConsole</span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link to="/store">
-              <Button variant="ghost">Store</Button>
-            </Link>
+          <div className="flex items-center gap-2 md:gap-4">
+            {!isMobile && (
+              <Link to="/store">
+                <Button variant="ghost" size="sm">Store</Button>
+              </Link>
+            )}
             <ThemeToggle />
+            {!isMobile && (
+              <Link to="/auth">
+                <Button variant="ghost" size="sm">Sign In</Button>
+              </Link>
+            )}
             <Link to="/auth">
-              <Button variant="ghost">Sign In</Button>
-            </Link>
-            <Link to="/auth">
-              <Button variant="hero">Get Started</Button>
+              <Button variant="hero" size={isMobile ? "sm" : "default"}>Get Started</Button>
             </Link>
           </div>
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-20 md:py-32">
+      <section className="container mx-auto px-4 py-12 md:py-32">
         <div className="text-center max-w-4xl mx-auto animate-fade-in">
-          <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+          <h1 className="text-4xl md:text-7xl font-bold mb-6 animate-fade-in">
             <ScrambleText 
               text="VibeDevConsole"
               scrambleDuration={2000}
@@ -205,9 +211,9 @@ const Landing = () => {
       </section>
 
       {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-20 bg-muted/30">
-          <div className="text-center mb-16">
-          <h2 className="text-4xl font-bold mb-4">Why Choose VibeDevConsole?</h2>
+      <section id="features" className="container mx-auto px-4 py-12 md:py-20 bg-muted/30">
+          <div className="text-center mb-12 md:mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">Why Choose VibeDevConsole?</h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
             Built for developers who value speed, security, and simplicity
           </p>
@@ -277,9 +283,9 @@ const Landing = () => {
       </section>
 
       {/* CTA Section */}
-      <section className="container mx-auto px-4 py-20">
-        <div className="max-w-4xl mx-auto text-center gradient-primary rounded-2xl p-12 shadow-glow">
-          <h2 className="text-4xl font-bold text-primary-foreground mb-4">
+      <section className="container mx-auto px-4 py-12 md:py-20">
+        <div className="max-w-4xl mx-auto text-center gradient-primary rounded-2xl p-8 md:p-12 shadow-glow">
+          <h2 className="text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
             Ready to Get Started?
           </h2>
           <p className="text-xl text-primary-foreground/90 mb-8">
